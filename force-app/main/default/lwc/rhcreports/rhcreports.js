@@ -1,5 +1,23 @@
 import { LightningElement, api } from 'lwc';
 
+import getReportNames from '@salesforce/apex/AA_RHCReportController.getReportNames';
+import getAccounts from '@salesforce/apex/AA_RHCReportController.getAccounts';
+import getADOs from '@salesforce/apex/AA_RHCReportController.getADOs';
+import getRVPs from '@salesforce/apex/AA_RHCReportController.getRVPs';
+import getDVPs from '@salesforce/apex/AA_RHCReportController.getDVPs';
+import getReportTable from '@salesforce/apex/AA_RHCReportController.getReportTable';
+import getContacts from '@salesforce/apex/AA_RHCReportController.getContacts';
+import getDVPTeams from '@salesforce/apex/AA_RHCReportController.getDVPTeams';
+import getRVPTeams from '@salesforce/apex/AA_RHCReportController.getRVPTeams';
+import getADOTeams from '@salesforce/apex/AA_RHCReportController.getADOTeams';
+import getFacility from '@salesforce/apex/AA_RHCReportController.getFacility';
+import getDVPActivities from '@salesforce/apex/AA_RHCReportController.getDVPActivities';
+import getRVPActivities from '@salesforce/apex/AA_RHCReportController.getRVPActivities';
+import getADOActivities from '@salesforce/apex/AA_RHCReportController.getADOActivities';
+import getAllRHBActive from '@salesforce/apex/AA_RHCReportController.getAllRHBActive';
+import getNPSTasks from '@salesforce/apex/AA_RHCReportController.getNPSTasks';
+import getPDPMTasks from '@salesforce/apex/AA_RHCReportController.getPDPMTasks';
+
 export default class Rhcreports extends LightningElement {
 
     @api selReports = [];
@@ -95,34 +113,129 @@ export default class Rhcreports extends LightningElement {
     
     @api Spinner = false;
 
-    doInit(){
-		helper.getReports(component);
-        helper.getAccounts(component);
-        helper.getADOList(component);
-        helper.getRVPList(component);
-        helper.getDVPList(component);
+    @api showFacility = false;
+    @api showPageListDVPAct = false;
+    @api showPageListRVPAct = false;
+    @api showPageListADOAct = false;
+    @api showCon = false;
+    @api showConADO = false;
+    @api showConDVP = false;
+    @api showConRVP = false;
+    @api showConCTeam = false;
+    @api showAcc = false;
+    @api showConTasks = false;
+    @api accSelectDisabled = false;
+    @api selectedReport;
+    @api selectedAccount;
+
+    connectedCallback(){
+        this.accSelectDisabled = true;
+        this.Spinner = true;
+        getReportNames().then(
+            result=>{
+                var stringItems = result;
+                this.selReports = stringItems;
+                getAccounts().then(
+                    result=>{
+                        var stringItems = result;
+                        this.selAccounts = stringItems;
+                        getADOs().then(
+                            result=>{
+                                var stringItems = result;
+                                var options = [];
+                                for(var i = 0; i < stringItems.length; i++){ 
+                                    options.push({ value: stringItems[i], label: stringItems[i]});
+                                    }
+                                this.adoListChoose = options;
+                                getRVPs().then(
+                                    result=>{
+                                        var stringItems = result;
+                                        var options = [];
+                                        for(var i = 0; i < stringItems.length; i++){ 
+                                            options.push({ value: stringItems[i], label: stringItems[i]});
+                                            }
+                                        this.rvpListChoose = options;
+                                        getDVPs().then(
+                                            result=>{
+                                                var stringItems = result;
+                                            var options = [];
+                                            for(var i = 0; i < stringItems.length; i++){ 
+                                                options.push({ value: stringItems[i], label: stringItems[i]});
+                                                }
+                                                this.dvpListChoose = options;
+                                                this.Spinner = false;
+                                                }
+                                            )
+                                        .catch(
+                                            error=>{
+                                                console.log('Error getting DVPs: ' + error.message);
+                                                this.Spinner = false;
+                                                }
+                                            );
+                                        }
+                                    )
+                                .catch(
+                                    error=>{
+                                        console.log('Error getting RVPs: ' + error.message);
+                                        this.Spinner = false;
+                                        }
+                                    );
+                                }
+                            )
+                        .catch(
+                            error=>{
+                                console.log('Error getting ADOs: ' + error.message);
+                                this.Spinner = false;
+                                }
+                            );
+                        }
+                    )
+                .catch(
+                    error=>{
+                        console.log('Error getting accounts: ' + error.message);
+                        this.Spinner = false;
+                        }
+                    );
+                }
+            )
+        .catch(
+            error=>{
+                console.log('Error getting reports: ' + error.message);
+                this.Spinner = false;
+                }
+            );
         }
     
+    getFormInputChange(event){
+        var name = event.target.name;
+        if(name === 'InputSelectAccount'){
+            this.selectedAccount = event.target.value;
+            }
+
+        }
+
     handleADOChange(event){
-        var selectedOptionsList = event.getParam("value");
-        console.log(selectedOptionsList);
+        var selectedOptionsList = event.target.value;
+        console.log('ADOs: ' + selectedOptionsList);
         this.selectedADO = selectedOptionsList;
     	}
     
     handleRVPChange(event){
-        var selectedOptionsList = event.getParam("value");
-        console.log(selectedOptionsList);
+        var selectedOptionsList = event.target.value;
+        console.log('RVPs: ' + selectedOptionsList);
         this.selectedRVP = selectedOptionsList;
     	}
     
     handleDVPChange(event){
-        var selectedOptionsList = event.getParam("value");
-        console.log(selectedOptionsList);
+        var selectedOptionsList = event.target.value;
+        console.log('DVPs: ' + selectedOptionsList);
         this.selectedDVP = selectedOptionsList;
     	}
     
-    onReportChange(){
-        var report = component.find("InputSelectReport").get("v.value");
+    onReportChange(event){
+        var report = event.target.value;
+        console.log('Selected Report: ' + report);
+        this.selectedReport = report;
         if(report === 'Contacts Reporting'){
             this.showAlpha = false;
             this.report1 = true;
@@ -147,151 +260,59 @@ export default class Rhcreports extends LightningElement {
             this.report2 = false;
             this.report3 = false;
             this.report4 = true;
-            helper.getAllNPSPDPMActive(component);
+            this.getAllNPSPDPMActive();
+            try{
             var startLetter = 'A';
-            helper.getAllNPSPDPMRows(component, startLetter).then(
-            $A.getCallback(function(result){
-                
-            })
-        		)
-            .then(
-            $A.getCallback(function(result){
-                var startLetter = 'B';
-                return helper.getAllNPSPDPMRows(component, startLetter);      
-            })
-            )
-            .then(
-            $A.getCallback(function(result){
-                var startLetter = 'C';
-                return helper.getAllNPSPDPMRows(component, startLetter);      
-            })
-            )
-            .then(
-            $A.getCallback(function(result){
-                var startLetter = 'D';
-                return helper.getAllNPSPDPMRows(component, startLetter);      
-            })
-            )
-            .then(
-            $A.getCallback(function(result){
-                var startLetter = 'E';
-                return helper.getAllNPSPDPMRows(component, startLetter);      
-            })
-            )
-            .then(
-            $A.getCallback(function(result){
-                var startLetter = 'F';
-                return helper.getAllNPSPDPMRows(component, startLetter);      
-            })
-            )
-            .then(
-            $A.getCallback(function(result){
-                var startLetter = 'G';
-                return helper.getAllNPSPDPMRows(component, startLetter);      
-            })
-            )
-            .then(
-            $A.getCallback(function(result){
-                var startLetter = 'H';
-                return helper.getAllNPSPDPMRows(component, startLetter);      
-            })
-            )
-            .then(
-            $A.getCallback(function(result){
-                var startLetter = 'I';
-                return helper.getAllNPSPDPMRows(component, startLetter);      
-            })
-            )
-            .then(
-            $A.getCallback(function(result){
-                var startLetter = 'J';
-                return helper.getAllNPSPDPMRows(component, startLetter);      
-            })
-            )
-            .then(
-            $A.getCallback(function(result){
-                var startLetter = 'K';
-                return helper.getAllNPSPDPMRows(component, startLetter);      
-            })
-            )
-            .then(
-            $A.getCallback(function(result){
-                var startLetter = 'L';
-                return helper.getAllNPSPDPMRows(component, startLetter);      
-            })
-            )
-            .then(
-            $A.getCallback(function(result){
-                var startLetter = 'M';
-                return helper.getAllNPSPDPMRows(component, startLetter);      
-            })
-            )
-            .then(
-            $A.getCallback(function(result){
-                var startLetter = 'N';
-                return helper.getAllNPSPDPMRows(component, startLetter);      
-            })
-            )
-            .then(
-            $A.getCallback(function(result){
-                var startLetter = 'O';
-                return helper.getAllNPSPDPMRows(component, startLetter);      
-            })
-            )
-            .then(
-            $A.getCallback(function(result){
-                var startLetter = 'P';
-                return helper.getAllNPSPDPMRows(component, startLetter);      
-            })
-            )
-            .then(
-            $A.getCallback(function(result){
-                var startLetter = 'Q';
-                return helper.getAllNPSPDPMRows(component, startLetter);      
-            })
-            )
-            .then(
-            $A.getCallback(function(result){
-                var startLetter = 'R';
-                return helper.getAllNPSPDPMRows(component, startLetter);      
-            })
-            )
-            .then(
-            $A.getCallback(function(result){
-                var startLetter = 'S';
-                return helper.getAllNPSPDPMRows(component, startLetter);      
-            })
-            )
-            .then(
-            $A.getCallback(function(result){
-                var startLetter = 'T';
-                return helper.getAllNPSPDPMRows(component, startLetter);      
-            })
-            )
-            .then(
-            $A.getCallback(function(result){
-                var startLetter = 'U';
-                return helper.getAllNPSPDPMRows(component, startLetter);      
-            })
-            )
-            .then(
-            $A.getCallback(function(result){
-                var startLetter = 'V';
-                return helper.getAllNPSPDPMRows(component, startLetter);      
-            })
-            )
-            .then(
-            $A.getCallback(function(result){
-                var startLetter = 'W';
-                return helper.getAllNPSPDPMRows(component, startLetter);      
-            })
-            ).catch(
-                    $A.getCallback(function(error){
-                        // Something went wrong
-                        alert('An error occurred : ' + error.message);
-                    })
-                );
-            
+            this.getAllNPSPDPMRows(startLetter);
+            startLetter = 'B';
+            this.getAllNPSPDPMRows(startLetter);
+            startLetter = 'C';
+            this.getAllNPSPDPMRows(startLetter);
+            startLetter = 'D';
+            this.getAllNPSPDPMRows(startLetter);
+            startLetter = 'E';
+            this.getAllNPSPDPMRows(startLetter);
+            startLetter = 'F';
+            this.getAllNPSPDPMRows(startLetter);
+            startLetter = 'G';
+            this.getAllNPSPDPMRows(startLetter);
+            startLetter = 'H';
+            this.getAllNPSPDPMRows(startLetter);
+            startLetter = 'I';
+            this.getAllNPSPDPMRows(startLetter);
+            startLetter = 'J';
+            this.getAllNPSPDPMRows(startLetter);
+            startLetter = 'K';
+            this.getAllNPSPDPMRows(startLetter);
+            startLetter = 'L';
+            this.getAllNPSPDPMRows(startLetter);
+            startLetter = 'M';
+            this.getAllNPSPDPMRows(startLetter);
+            startLetter = 'N';
+            this.getAllNPSPDPMRows(startLetter);
+            startLetter = 'O';
+            this.getAllNPSPDPMRows(startLetter);
+            startLetter = 'P';
+            this.getAllNPSPDPMRows(startLetter);
+            startLetter = 'Q';
+            this.getAllNPSPDPMRows(startLetter);
+            startLetter = 'R';
+            this.getAllNPSPDPMRows(startLetter);
+            startLetter = 'S';
+            this.getAllNPSPDPMRows(startLetter);
+            startLetter = 'T';
+            this.getAllNPSPDPMRows(startLetter);
+            startLetter = 'U';
+            this.getAllNPSPDPMRows(startLetter);
+            startLetter = 'V';
+            this.getAllNPSPDPMRows(startLetter);
+            startLetter = 'W';
+            this.getAllNPSPDPMRows(startLetter);
+            }
+            catch(err){
+                console.log('Error getting allNPSPDPMRows: ' + err.message);
+                this.Spinner = false;
+                }
         	}
         else if(report.includes("PDPM")){
             this.showAlpha = false;
@@ -300,152 +321,55 @@ export default class Rhcreports extends LightningElement {
             this.report2 = false;
             this.report3 = false;
             this.report4 = true;
-            helper.getAllNPSPDPMActive(component);
+            this.getAllNPSPDPMActive();
             this.showExtraFilters = true;
         	
             var startLetter = 'A';
-            helper.getAllNPSPDPMRows(component, startLetter).then(
-            $A.getCallback(function(result){
-                
-            })
-        		)
-            .then(
-            $A.getCallback(function(result){
-                var startLetter = 'B';
-                return helper.getAllNPSPDPMRows(component, startLetter);      
-            })
-            )
-            .then(
-            $A.getCallback(function(result){
-                var startLetter = 'C';
-                return helper.getAllNPSPDPMRows(component, startLetter);      
-            })
-            )
-            .then(
-            $A.getCallback(function(result){
-                var startLetter = 'D';
-                return helper.getAllNPSPDPMRows(component, startLetter);      
-            })
-            )
-            .then(
-            $A.getCallback(function(result){
-                var startLetter = 'E';
-                return helper.getAllNPSPDPMRows(component, startLetter);      
-            })
-            )
-            .then(
-            $A.getCallback(function(result){
-                var startLetter = 'F';
-                return helper.getAllNPSPDPMRows(component, startLetter);      
-            })
-            )
-            .then(
-            $A.getCallback(function(result){
-                var startLetter = 'G';
-                return helper.getAllNPSPDPMRows(component, startLetter);      
-            })
-            )
-            .then(
-            $A.getCallback(function(result){
-                var startLetter = 'H';
-                return helper.getAllNPSPDPMRows(component, startLetter);      
-            })
-            )
-            .then(
-            $A.getCallback(function(result){
-                var startLetter = 'I';
-                return helper.getAllNPSPDPMRows(component, startLetter);      
-            })
-            )
-            .then(
-            $A.getCallback(function(result){
-                var startLetter = 'J';
-                return helper.getAllNPSPDPMRows(component, startLetter);      
-            })
-            )
-            .then(
-            $A.getCallback(function(result){
-                var startLetter = 'K';
-                return helper.getAllNPSPDPMRows(component, startLetter);      
-            })
-            )
-            .then(
-            $A.getCallback(function(result){
-                var startLetter = 'L';
-                return helper.getAllNPSPDPMRows(component, startLetter);      
-            })
-            )
-            .then(
-            $A.getCallback(function(result){
-                var startLetter = 'M';
-                return helper.getAllNPSPDPMRows(component, startLetter);      
-            })
-            )
-            .then(
-            $A.getCallback(function(result){
-                var startLetter = 'N';
-                return helper.getAllNPSPDPMRows(component, startLetter);      
-            })
-            )
-            .then(
-            $A.getCallback(function(result){
-                var startLetter = 'O';
-                return helper.getAllNPSPDPMRows(component, startLetter);      
-            })
-            )
-            .then(
-            $A.getCallback(function(result){
-                var startLetter = 'P';
-                return helper.getAllNPSPDPMRows(component, startLetter);      
-            })
-            )
-            .then(
-            $A.getCallback(function(result){
-                var startLetter = 'Q';
-                return helper.getAllNPSPDPMRows(component, startLetter);      
-            })
-            )
-            .then(
-            $A.getCallback(function(result){
-                var startLetter = 'R';
-                return helper.getAllNPSPDPMRows(component, startLetter);      
-            })
-            )
-            .then(
-            $A.getCallback(function(result){
-                var startLetter = 'S';
-                return helper.getAllNPSPDPMRows(component, startLetter);      
-            })
-            )
-            .then(
-            $A.getCallback(function(result){
-                var startLetter = 'T';
-                return helper.getAllNPSPDPMRows(component, startLetter);      
-            })
-            )
-            .then(
-            $A.getCallback(function(result){
-                var startLetter = 'U';
-                return helper.getAllNPSPDPMRows(component, startLetter);      
-            })
-            )
-            .then(
-            $A.getCallback(function(result){
-                var startLetter = 'V';
-                return helper.getAllNPSPDPMRows(component, startLetter);      
-            })
-            )
-            .then(
-            $A.getCallback(function(result){
-                var startLetter = 'W';
-                return helper.getAllNPSPDPMRows(component, startLetter);      
-            })
-            ).catch(
-                    $A.getCallback(function(error){
-                        // Something went wrong
-                        alert('An error occurred : ' + error.message);
-                    })
-                );
+            this.getAllNPSPDPMRows(startLetter)
+            startLetter = 'B';
+            this.getAllNPSPDPMRows(startLetter);
+            startLetter = 'C';
+            this.getAllNPSPDPMRows(startLetter);
+            startLetter = 'D';
+            this.getAllNPSPDPMRows(startLetter);
+            startLetter = 'E';
+            this.getAllNPSPDPMRows(startLetter);
+            startLetter = 'F';
+            this.getAllNPSPDPMRows(startLetter);
+            startLetter = 'G';
+            this.getAllNPSPDPMRows(startLetter);
+            startLetter = 'H';
+            this.getAllNPSPDPMRows(startLetter);
+            startLetter = 'I';
+            this.getAllNPSPDPMRows(startLetter);
+            startLetter = 'J';
+            this.getAllNPSPDPMRows(startLetter);
+            startLetter = 'K';
+            this.getAllNPSPDPMRows(startLetter);
+            startLetter = 'L';
+            this.getAllNPSPDPMRows(startLetter);
+            startLetter = 'M';
+            this.getAllNPSPDPMRows(startLetter);
+            startLetter = 'N';
+            this.getAllNPSPDPMRows(startLetter);
+            startLetter = 'O';
+            this.getAllNPSPDPMRows(startLetter);
+            startLetter = 'P';
+            this.getAllNPSPDPMRows(startLetter);
+            startLetter = 'Q';
+            this.getAllNPSPDPMRows(startLetter);
+            startLetter = 'R';
+            this.getAllNPSPDPMRows(startLetter);
+            startLetter = 'S';
+            this.getAllNPSPDPMRows(startLetter);
+            startLetter = 'T';
+            this.getAllNPSPDPMRows(startLetter);
+            startLetter = 'U';
+            this.getAllNPSPDPMRows(startLetter);
+            startLetter = 'V';
+            this.getAllNPSPDPMRows(startLetter);
+            startLetter = 'W';
+            this.getAllNPSPDPMRows(startLetter);
         	}
         else if(report === 'All Accounts Reporting'){
             this.showAlpha = false;
@@ -455,158 +379,65 @@ export default class Rhcreports extends LightningElement {
         	this.report3 = true;
             this.report4 = false;
             this.showExtraFilters = true;
-            
+            try{
             var startLetter = 'A';
-            helper.getAllRHBRows(component, startLetter).then(
-            $A.getCallback(function(result){
-                
-            })
-        		)
-            .then(
-            $A.getCallback(function(result){
-                var startLetter = 'B';
-                return helper.getAllRHBRows(component, startLetter);      
-            })
-            )
-            .then(
-            $A.getCallback(function(result){
-                var startLetter = 'C';
-                return helper.getAllRHBRows(component, startLetter);      
-            })
-            )
-            .then(
-            $A.getCallback(function(result){
-                var startLetter = 'D';
-                return helper.getAllRHBRows(component, startLetter);      
-            })
-            )
-            .then(
-            $A.getCallback(function(result){
-                var startLetter = 'E';
-                return helper.getAllRHBRows(component, startLetter);      
-            })
-            )
-            .then(
-            $A.getCallback(function(result){
-                var startLetter = 'F';
-                return helper.getAllRHBRows(component, startLetter);      
-            })
-            )
-            .then(
-            $A.getCallback(function(result){
-                var startLetter = 'G';
-                return helper.getAllRHBRows(component, startLetter);      
-            })
-            )
-            .then(
-            $A.getCallback(function(result){
-                var startLetter = 'H';
-                return helper.getAllRHBRows(component, startLetter);      
-            })
-            )
-            .then(
-            $A.getCallback(function(result){
-                var startLetter = 'I';
-                return helper.getAllRHBRows(component, startLetter);      
-            })
-            )
-            .then(
-            $A.getCallback(function(result){
-                var startLetter = 'J';
-                return helper.getAllRHBRows(component, startLetter);      
-            })
-            )
-            .then(
-            $A.getCallback(function(result){
-                var startLetter = 'K';
-                return helper.getAllRHBRows(component, startLetter);      
-            })
-            )
-            .then(
-            $A.getCallback(function(result){
-                var startLetter = 'L';
-                return helper.getAllRHBRows(component, startLetter);      
-            })
-            )
-            .then(
-            $A.getCallback(function(result){
-                var startLetter = 'M';
-                return helper.getAllRHBRows(component, startLetter);      
-            })
-            )
-            .then(
-            $A.getCallback(function(result){
-                var startLetter = 'N';
-                return helper.getAllRHBRows(component, startLetter);      
-            })
-            )
-            .then(
-            $A.getCallback(function(result){
-                var startLetter = 'O';
-                return helper.getAllRHBRows(component, startLetter);      
-            })
-            )
-            .then(
-            $A.getCallback(function(result){
-                var startLetter = 'P';
-                return helper.getAllRHBRows(component, startLetter);      
-            })
-            )
-            .then(
-            $A.getCallback(function(result){
-                var startLetter = 'Q';
-                return helper.getAllRHBRows(component, startLetter);      
-            })
-            )
-            .then(
-            $A.getCallback(function(result){
-                var startLetter = 'R';
-                return helper.getAllRHBRows(component, startLetter);      
-            })
-            )
-            .then(
-            $A.getCallback(function(result){
-                var startLetter = 'S';
-                return helper.getAllRHBRows(component, startLetter);      
-            })
-            )
-            .then(
-            $A.getCallback(function(result){
-                var startLetter = 'T';
-                return helper.getAllRHBRows(component, startLetter);      
-            })
-            )
-            .then(
-            $A.getCallback(function(result){
-                var startLetter = 'U';
-                return helper.getAllRHBRows(component, startLetter);      
-            })
-            )
-            .then(
-            $A.getCallback(function(result){
-                var startLetter = 'V';
-                return helper.getAllRHBRows(component, startLetter);      
-            })
-            )
-            .then(
-            $A.getCallback(function(result){
-                var startLetter = 'W';
-                return helper.getAllRHBRows(component, startLetter);      
-            })
-            ).catch(
-                    $A.getCallback(function(error){
-                        // Something went wrong
-                        alert('An error occurred : ' + error.message);
-                    })
-                );
-            
-        	}   
-        helper.disableSelectAccount(component);
+            this.getAllRHBRows(startLetter);
+            startLetter = 'B';
+            this.getAllRHBRows(startLetter);
+            startLetter = 'C';
+            this.getAllRHBRows(startLetter);
+            startLetter = 'D';
+            this.getAllRHBRows(startLetter);
+            startLetter = 'E';
+            this.getAllRHBRows(startLetter);
+            startLetter = 'F';
+            this.getAllRHBRows(startLetter);
+            startLetter = 'G';
+            this.getAllRHBRows(startLetter);
+            startLetter = 'H';
+            this.getAllRHBRows(startLetter);
+            startLetter = 'I';
+            this.getAllRHBRows(startLetter);
+            startLetter = 'J';
+            this.getAllRHBRows(startLetter);
+            startLetter = 'K';
+            this.getAllRHBRows(startLetter);
+            startLetter = 'L';
+            this.getAllRHBRows(startLetter);
+            startLetter = 'M';
+            this.getAllRHBRows(startLetter);
+            startLetter = 'N';
+            this.getAllRHBRows(startLetter);
+            startLetter = 'O';
+            this.getAllRHBRows(startLetter);
+            startLetter = 'P';
+            this.getAllRHBRows(startLetter);
+            startLetter = 'Q';
+            this.getAllRHBRows(startLetter);
+            startLetter = 'R';
+            this.getAllRHBRows(startLetter);
+            startLetter = 'S';
+            this.getAllRHBRows(startLetter);
+            startLetter = 'T';
+            this.getAllRHBRows(startLetter);
+            startLetter = 'U';
+            this.getAllRHBRows(startLetter);
+            startLetter = 'V';
+            this.getAllRHBRows(startLetter);
+            startLetter = 'W';
+            this.getAllRHBRows(startLetter);
+            }
+            catch(err){
+                console.log('Error getting AllRHBRows: ' + err.message);
+                this.Spinner = false;
+                }
+            }   
+        this.disableSelectAccount();
     	}
     
     runReport(){
         
-        var report = component.find("InputSelectReport").get("v.value");
+        var report = this.selectedReport;
         
         if(report === 'Contacts Reporting'){
             this.showAlpha = false;
@@ -639,153 +470,59 @@ export default class Rhcreports extends LightningElement {
             this.report3 = false;
             this.report4 = true;
             this.showExtraFilters = true;
-            helper.getAllNPSPDPMActive(component);
-            
+            this.getAllNPSPDPMActive();
+            try{
             var startLetter = 'A';
-            helper.getAllNPSPDPMRows(component, startLetter).then(
-            $A.getCallback(function(result){
-                
-            })
-        		)
-            .then(
-            $A.getCallback(function(result){
-                var startLetter = 'B';
-                return helper.getAllNPSPDPMRows(component, startLetter);      
-            })
-            )
-            .then(
-            $A.getCallback(function(result){
-                var startLetter = 'C';
-                return helper.getAllNPSPDPMRows(component, startLetter);      
-            })
-            )
-            .then(
-            $A.getCallback(function(result){
-                var startLetter = 'D';
-                return helper.getAllNPSPDPMRows(component, startLetter);      
-            })
-            )
-            .then(
-            $A.getCallback(function(result){
-                var startLetter = 'E';
-                return helper.getAllNPSPDPMRows(component, startLetter);      
-            })
-            )
-            .then(
-            $A.getCallback(function(result){
-                var startLetter = 'F';
-                return helper.getAllNPSPDPMRows(component, startLetter);      
-            })
-            )
-            .then(
-            $A.getCallback(function(result){
-                var startLetter = 'G';
-                return helper.getAllNPSPDPMRows(component, startLetter);      
-            })
-            )
-            .then(
-            $A.getCallback(function(result){
-                var startLetter = 'H';
-                return helper.getAllNPSPDPMRows(component, startLetter);      
-            })
-            )
-            .then(
-            $A.getCallback(function(result){
-                var startLetter = 'I';
-                return helper.getAllNPSPDPMRows(component, startLetter);      
-            })
-            )
-            .then(
-            $A.getCallback(function(result){
-                var startLetter = 'J';
-                return helper.getAllNPSPDPMRows(component, startLetter);      
-            })
-            )
-            .then(
-            $A.getCallback(function(result){
-                var startLetter = 'K';
-                return helper.getAllNPSPDPMRows(component, startLetter);      
-            })
-            )
-            .then(
-            $A.getCallback(function(result){
-                var startLetter = 'L';
-                return helper.getAllNPSPDPMRows(component, startLetter);      
-            })
-            )
-            .then(
-            $A.getCallback(function(result){
-                var startLetter = 'M';
-                return helper.getAllNPSPDPMRows(component, startLetter);      
-            })
-            )
-            .then(
-            $A.getCallback(function(result){
-                var startLetter = 'N';
-                return helper.getAllNPSPDPMRows(component, startLetter);      
-            })
-            )
-            .then(
-            $A.getCallback(function(result){
-                var startLetter = 'O';
-                return helper.getAllNPSPDPMRows(component, startLetter);      
-            })
-            )
-            .then(
-            $A.getCallback(function(result){
-                var startLetter = 'P';
-                return helper.getAllNPSPDPMRows(component, startLetter);      
-            })
-            )
-            .then(
-            $A.getCallback(function(result){
-                var startLetter = 'Q';
-                return helper.getAllNPSPDPMRows(component, startLetter);      
-            })
-            )
-            .then(
-            $A.getCallback(function(result){
-                var startLetter = 'R';
-                return helper.getAllNPSPDPMRows(component, startLetter);      
-            })
-            )
-            .then(
-            $A.getCallback(function(result){
-                var startLetter = 'S';
-                return helper.getAllNPSPDPMRows(component, startLetter);      
-            })
-            )
-            .then(
-            $A.getCallback(function(result){
-                var startLetter = 'T';
-                return helper.getAllNPSPDPMRows(component, startLetter);      
-            })
-            )
-            .then(
-            $A.getCallback(function(result){
-                var startLetter = 'U';
-                return helper.getAllNPSPDPMRows(component, startLetter);      
-            })
-            )
-            .then(
-            $A.getCallback(function(result){
-                var startLetter = 'V';
-                return helper.getAllNPSPDPMRows(component, startLetter);      
-            })
-            )
-            .then(
-            $A.getCallback(function(result){
-                var startLetter = 'W';
-                return helper.getAllNPSPDPMRows(component, startLetter);      
-            })
-            )
-            .catch(
-                    $A.getCallback(function(error){
-                        // Something went wrong
-                        alert('An error occurred : ' + error.message);
-                    })
-                );
-            
+            this.getAllNPSPDPMRows(startLetter);
+            startLetter = 'B';
+            this.getAllNPSPDPMRows(startLetter);
+            startLetter = 'C';
+            this.getAllNPSPDPMRows(startLetter);
+            startLetter = 'D';
+            this.getAllNPSPDPMRows(startLetter);
+            startLetter = 'E';
+            this.getAllNPSPDPMRows(startLetter);
+            startLetter = 'F';
+            this.getAllNPSPDPMRows(startLetter);
+            startLetter = 'G';
+            this.getAllNPSPDPMRows(startLetter);
+            startLetter = 'H';
+            this.getAllNPSPDPMRows(startLetter);
+            startLetter = 'I';
+            this.getAllNPSPDPMRows(startLetter);
+            startLetter = 'J';
+            this.getAllNPSPDPMRows(startLetter);
+            startLetter = 'K';
+            this.getAllNPSPDPMRows(startLetter);
+            startLetter = 'L';
+            this.getAllNPSPDPMRows(startLetter);
+            startLetter = 'M';
+            this.getAllNPSPDPMRows(startLetter);
+            startLetter = 'N';
+            this.getAllNPSPDPMRows(startLetter);
+            startLetter = 'O';
+            this.getAllNPSPDPMRows(startLetter);
+            startLetter = 'P';
+            this.getAllNPSPDPMRows(startLetter);
+            startLetter = 'Q';
+            this.getAllNPSPDPMRows(startLetter);
+            startLetter = 'R';
+            this.getAllNPSPDPMRows(startLetter);
+            startLetter = 'S';
+            this.getAllNPSPDPMRows(startLetter);
+            startLetter = 'T';
+            this.getAllNPSPDPMRows(startLetter);
+            startLetter = 'U';
+            this.getAllNPSPDPMRows(startLetter);
+            startLetter = 'V';
+            this.getAllNPSPDPMRows(startLetter);
+            startLetter = 'W';
+            this.getAllNPSPDPMRows(startLetter);
+            }
+            catch(err){
+                console.log('Error fetching NPSPDPM rows: ' + err.message);
+                this.Spinner = false;
+                }
         	}
         else if(report.includes("PDPM")){
             this.showAlpha = false;
@@ -794,153 +531,60 @@ export default class Rhcreports extends LightningElement {
             this.report2 = false;
             this.report3 = false;
             this.report4 = true;
-            helper.getAllNPSPDPMActive(component);
+            this.getAllNPSPDPMActive();
             this.showExtraFilters = true;
-        	
+        	try{
             var startLetter = 'A';
-            helper.getAllNPSPDPMRows(component, startLetter).then(
-            $A.getCallback(function(result){
-                
-            })
-        		)
-            .then(
-            $A.getCallback(function(result){
-                var startLetter = 'B';
-                return helper.getAllNPSPDPMRows(component, startLetter);      
-            })
-            )
-            .then(
-            $A.getCallback(function(result){
-                var startLetter = 'C';
-                return helper.getAllNPSPDPMRows(component, startLetter);      
-            })
-            )
-            .then(
-            $A.getCallback(function(result){
-                var startLetter = 'D';
-                return helper.getAllNPSPDPMRows(component, startLetter);      
-            })
-            )
-            .then(
-            $A.getCallback(function(result){
-                var startLetter = 'E';
-                return helper.getAllNPSPDPMRows(component, startLetter);      
-            })
-            )
-            .then(
-            $A.getCallback(function(result){
-                var startLetter = 'F';
-                return helper.getAllNPSPDPMRows(component, startLetter);      
-            })
-            )
-            .then(
-            $A.getCallback(function(result){
-                var startLetter = 'G';
-                return helper.getAllNPSPDPMRows(component, startLetter);      
-            })
-            )
-            .then(
-            $A.getCallback(function(result){
-                var startLetter = 'H';
-                return helper.getAllNPSPDPMRows(component, startLetter);      
-            })
-            )
-            .then(
-            $A.getCallback(function(result){
-                var startLetter = 'I';
-                return helper.getAllNPSPDPMRows(component, startLetter);      
-            })
-            )
-            .then(
-            $A.getCallback(function(result){
-                var startLetter = 'J';
-                return helper.getAllNPSPDPMRows(component, startLetter);      
-            })
-            )
-            .then(
-            $A.getCallback(function(result){
-                var startLetter = 'K';
-                return helper.getAllNPSPDPMRows(component, startLetter);      
-            })
-            )
-            .then(
-            $A.getCallback(function(result){
-                var startLetter = 'L';
-                return helper.getAllNPSPDPMRows(component, startLetter);      
-            })
-            )
-            .then(
-            $A.getCallback(function(result){
-                var startLetter = 'M';
-                return helper.getAllNPSPDPMRows(component, startLetter);      
-            })
-            )
-            .then(
-            $A.getCallback(function(result){
-                var startLetter = 'N';
-                return helper.getAllNPSPDPMRows(component, startLetter);      
-            })
-            )
-            .then(
-            $A.getCallback(function(result){
-                var startLetter = 'O';
-                return helper.getAllNPSPDPMRows(component, startLetter);      
-            })
-            )
-            .then(
-            $A.getCallback(function(result){
-                var startLetter = 'P';
-                return helper.getAllNPSPDPMRows(component, startLetter);      
-            })
-            )
-            .then(
-            $A.getCallback(function(result){
-                var startLetter = 'Q';
-                return helper.getAllNPSPDPMRows(component, startLetter);      
-            })
-            )
-            .then(
-            $A.getCallback(function(result){
-                var startLetter = 'R';
-                return helper.getAllNPSPDPMRows(component, startLetter);      
-            })
-            )
-            .then(
-            $A.getCallback(function(result){
-                var startLetter = 'S';
-                return helper.getAllNPSPDPMRows(component, startLetter);      
-            })
-            )
-            .then(
-            $A.getCallback(function(result){
-                var startLetter = 'T';
-                return helper.getAllNPSPDPMRows(component, startLetter);      
-            })
-            )
-            .then(
-            $A.getCallback(function(result){
-                var startLetter = 'U';
-                return helper.getAllNPSPDPMRows(component, startLetter);      
-            })
-            )
-            .then(
-            $A.getCallback(function(result){
-                var startLetter = 'V';
-                return helper.getAllNPSPDPMRows(component, startLetter);      
-            })
-            )
-            .then(
-            $A.getCallback(function(result){
-                var startLetter = 'W';
-                return helper.getAllNPSPDPMRows(component, startLetter);      
-            })
-            )
-            .catch(
-                    $A.getCallback(function(error){
-                        // Something went wrong
-                        alert('An error occurred : ' + error.message);
-                    })
-                );
+            this.getAllNPSPDPMRows(startLetter);
+            startLetter = 'B';
+            this.getAllNPSPDPMRows(startLetter);
+            startLetter = 'C';
+            this.getAllNPSPDPMRows(startLetter);
+            startLetter = 'D';
+            this.getAllNPSPDPMRows(startLetter);
+            startLetter = 'E';
+            this.getAllNPSPDPMRows(startLetter);
+            startLetter = 'F';
+            this.getAllNPSPDPMRows(startLetter);
+            startLetter = 'G';
+            this.getAllNPSPDPMRows(startLetter);
+            startLetter = 'H';
+            this.getAllNPSPDPMRows(startLetter);
+            startLetter = 'I';
+            this.getAllNPSPDPMRows(startLetter);
+            startLetter = 'J';
+            this.getAllNPSPDPMRows(startLetter);
+            startLetter = 'K';
+            this.getAllNPSPDPMRows(startLetter);
+            startLetter = 'L';
+            this.getAllNPSPDPMRows(startLetter);
+            startLetter = 'M';
+            this.getAllNPSPDPMRows(startLetter);
+            startLetter = 'N';
+            this.getAllNPSPDPMRows(startLetter);
+            startLetter = 'O';
+            this.getAllNPSPDPMRows(startLetter);
+            startLetter = 'P';
+            this.getAllNPSPDPMRows(startLetter);
+            startLetter = 'Q';
+            this.getAllNPSPDPMRows(startLetter);
+            startLetter = 'R';
+            this.getAllNPSPDPMRows(startLetter);
+            startLetter = 'S';
+            this.getAllNPSPDPMRows(startLetter);
+            startLetter = 'T';
+            this.getAllNPSPDPMRows(startLetter);
+            startLetter = 'U';
+            this.getAllNPSPDPMRows(startLetter);
+            startLetter = 'V';
+            this.getAllNPSPDPMRows(startLetter);
+            startLetter = 'W';
+            this.getAllNPSPDPMRows(startLetter);
+            }
+            catch(err){
+                console.log('Error getting NPSPDPMRows: ' + err.message);
+                this.Spinner = false;
+                }
         	}
         else if(report === 'All Accounts Reporting'){
             this.showAlpha = false;
@@ -950,152 +594,58 @@ export default class Rhcreports extends LightningElement {
         	this.report3 = true;
             this.report4 = false;
             helper.getAllRHBActive(component);
-        	
+        	try{
             var startLetter = 'A';
-            helper.getAllRHBRows(component, startLetter).then(
-            $A.getCallback(function(result){
-                
-            })
-        		)
-            .then(
-            $A.getCallback(function(result){
-                var startLetter = 'B';
-                return helper.getAllRHBRows(component, startLetter);      
-            })
-            )
-            .then(
-            $A.getCallback(function(result){
-                var startLetter = 'C';
-                return helper.getAllRHBRows(component, startLetter);      
-            })
-            )
-            .then(
-            $A.getCallback(function(result){
-                var startLetter = 'D';
-                return helper.getAllRHBRows(component, startLetter);      
-            })
-            )
-            .then(
-            $A.getCallback(function(result){
-                var startLetter = 'E';
-                return helper.getAllRHBRows(component, startLetter);      
-            })
-            )
-            .then(
-            $A.getCallback(function(result){
-                var startLetter = 'F';
-                return helper.getAllRHBRows(component, startLetter);      
-            })
-            )
-            .then(
-            $A.getCallback(function(result){
-                var startLetter = 'G';
-                return helper.getAllRHBRows(component, startLetter);      
-            })
-            )
-            .then(
-            $A.getCallback(function(result){
-                var startLetter = 'H';
-                return helper.getAllRHBRows(component, startLetter);      
-            })
-            )
-            .then(
-            $A.getCallback(function(result){
-                var startLetter = 'I';
-                return helper.getAllRHBRows(component, startLetter);      
-            })
-            )
-            .then(
-            $A.getCallback(function(result){
-                var startLetter = 'J';
-                return helper.getAllRHBRows(component, startLetter);      
-            })
-            )
-            .then(
-            $A.getCallback(function(result){
-                var startLetter = 'K';
-                return helper.getAllRHBRows(component, startLetter);      
-            })
-            )
-            .then(
-            $A.getCallback(function(result){
-                var startLetter = 'L';
-                return helper.getAllRHBRows(component, startLetter);      
-            })
-            )
-            .then(
-            $A.getCallback(function(result){
-                var startLetter = 'M';
-                return helper.getAllRHBRows(component, startLetter);      
-            })
-            )
-            .then(
-            $A.getCallback(function(result){
-                var startLetter = 'N';
-                return helper.getAllRHBRows(component, startLetter);      
-            })
-            )
-            .then(
-            $A.getCallback(function(result){
-                var startLetter = 'O';
-                return helper.getAllRHBRows(component, startLetter);      
-            })
-            )
-            .then(
-            $A.getCallback(function(result){
-                var startLetter = 'P';
-                return helper.getAllRHBRows(component, startLetter);      
-            })
-            )
-            .then(
-            $A.getCallback(function(result){
-                var startLetter = 'Q';
-                return helper.getAllRHBRows(component, startLetter);      
-            })
-            )
-            .then(
-            $A.getCallback(function(result){
-                var startLetter = 'R';
-                return helper.getAllRHBRows(component, startLetter);      
-            })
-            )
-            .then(
-            $A.getCallback(function(result){
-                var startLetter = 'S';
-                return helper.getAllRHBRows(component, startLetter);      
-            })
-            )
-            .then(
-            $A.getCallback(function(result){
-                var startLetter = 'T';
-                return helper.getAllRHBRows(component, startLetter);      
-            })
-            )
-            .then(
-            $A.getCallback(function(result){
-                var startLetter = 'U';
-                return helper.getAllRHBRows(component, startLetter);      
-            })
-            )
-            .then(
-            $A.getCallback(function(result){
-                var startLetter = 'V';
-                return helper.getAllRHBRows(component, startLetter);      
-            })
-            )
-            .then(
-            $A.getCallback(function(result){
-                var startLetter = 'W';
-                return helper.getAllRHBRows(component, startLetter);      
-            })
-            )
-            .catch(
-                    $A.getCallback(function(error){
-                        // Something went wrong
-                        alert('An error occurred : ' + error.message);
-                    })
-                );
-        
+            this.getAllRHBRows(startLetter);
+            startLetter = 'B';
+            this.getAllRHBRows(startLetter);
+            startLetter = 'C';
+            this.getAllRHBRows(startLetter);
+            startLetter = 'D';
+            this.getAllRHBRows(startLetter);
+            startLetter = 'E';
+            this.getAllRHBRows(startLetter);
+            startLetter = 'F';
+            this.getAllRHBRows(startLetter);
+            startLetter = 'G';
+            this.getAllRHBRows(startLetter);
+            startLetter = 'H';
+            this.getAllRHBRows(startLetter);
+            startLetter = 'I';
+            this.getAllRHBRows(startLetter);
+            startLetter = 'J';
+            this.getAllRHBRows(startLetter);
+            startLetter = 'K';
+            this.getAllRHBRows(startLetter);
+            startLetter = 'L';
+            this.getAllRHBRows(startLetter);
+            startLetter = 'M';
+            this.getAllRHBRows(startLetter);
+            startLetter = 'N';
+            this.getAllRHBRows(startLetter);
+            startLetter = 'O';
+            this.getAllRHBRows(startLetter);
+            startLetter = 'P';
+            this.getAllRHBRows(startLetter);
+            startLetter = 'Q';
+            this.getAllRHBRows(startLetter);
+            startLetter = 'R';
+            this.getAllRHBRows(startLetter);
+            startLetter = 'S';
+            this.getAllRHBRows(startLetter);
+            startLetter = 'T';
+            this.getAllRHBRows(startLetter);
+            startLetter = 'U';
+            this.getAllRHBRows(startLetter);
+            startLetter = 'V';
+            this.getAllRHBRows(startLetter);
+            startLetter = 'W';
+            this.getAllRHBRows(startLetter);
+            }
+            catch(err){
+                console.log('Error fetching lists: ' + err.message);
+                this.Spinner = false;
+                }
         	}
         }
     
@@ -1103,312 +653,312 @@ export default class Rhcreports extends LightningElement {
     onTabChangeA(){
         this.letterStart = "a";
         this.letterEnd = "b";
-        var report = component.find("InputSelectReport").get("v.value");
+        var report = this.selectedReport;
         if(report === 'All Accounts Reporting'){
-        	helper.getAllRHBActive(component);                
+        	this.getAllRHBAct();               
         	}
         else if(report === 'NPS Activity Report' || report.includes("PDPM")){
-            helper.getAllNPSPDPMActive(component);
+            this.getAllNPSPDPMActive();
         	}
         }
     
     onTabChangeB(){
         this.letterStart = "b";
         this.letterEnd = "c";
-        var report = component.find("InputSelectReport").get("v.value");
+        var report = this.selectedReport;
         if(report === 'All Accounts Reporting'){
-        	helper.getAllRHBActive(component);                
+        	this.getAllRHBAct();               
         	}
         else if(report === 'NPS Activity Report' || report.includes("PDPM")){
-            helper.getAllNPSPDPMActive(component);
+            this.getAllNPSPDPMActive();
         	}            
     	}
     
     onTabChangeC(){
         this.letterStart = "c";
         this.letterEnd = "d";
-        var report = component.find("InputSelectReport").get("v.value");
+        var report = this.selectedReport;
         if(report === 'All Accounts Reporting'){
-        	helper.getAllRHBActive(component);                
+        	this.getAllRHBAct();               
         	}
         else if(report === 'NPS Activity Report' || report.includes("PDPM")){
-            helper.getAllNPSPDPMActive(component);
+            this.getAllNPSPDPMActive();
         	}            
     	}
     
     onTabChangeD(){
         this.letterStart = "d";
         this.letterEnd = "e";
-        var report = component.find("InputSelectReport").get("v.value");
+        var report = this.selectedReport;
         if(report === 'All Accounts Reporting'){
-        	helper.getAllRHBActive(component);                
+        	this.getAllRHBAct();               
         	}
         else if(report === 'NPS Activity Report' || report.includes("PDPM")){
-            helper.getAllNPSPDPMActive(component);
+            this.getAllNPSPDPMActive();
         	}            
     	}
     
     onTabChangeE(){
         this.letterStart = "e";
         this.letterEnd = "f";
-        var report = component.find("InputSelectReport").get("v.value");
+        var report = this.selectedReport;
         if(report === 'All Accounts Reporting'){
-        	helper.getAllRHBActive(component);                
+        	this.getAllRHBAct();               
         	}
         else if(report === 'NPS Activity Report' || report.includes("PDPM")){
-            helper.getAllNPSPDPMActive(component);
+            this.getAllNPSPDPMActive();
         	}            
     	}
     
     onTabChangeF(){
         this.letterStart = "f";
         this.letterEnd = "g";
-        var report = component.find("InputSelectReport").get("v.value");
+        var report = this.selectedReport;
         if(report === 'All Accounts Reporting'){
-        	helper.getAllRHBActive(component);                
+        	this.getAllRHBAct();               
         	}
         else if(report === 'NPS Activity Report' || report.includes("PDPM")){
-            helper.getAllNPSPDPMActive(component);
+            this.getAllNPSPDPMActive();
         	}            
     	}
     
     onTabChangeG(){
         this.letterStart = "g";
         this.letterEnd = "h";
-        var report = component.find("InputSelectReport").get("v.value");
+        var report = this.selectedReport;
         if(report === 'All Accounts Reporting'){
-        	helper.getAllRHBActive(component);                
+        	this.getAllRHBAct();               
         	}
         else if(report === 'NPS Activity Report' || report.includes("PDPM")){
-            helper.getAllNPSPDPMActive(component);
+            this.getAllNPSPDPMActive();
         	}            
     	}
     
     onTabChangeH(){
         this.letterStart = "h";
         this.letterEnd = "i";
-        var report = component.find("InputSelectReport").get("v.value");
+        var report = this.selectedReport;
         if(report === 'All Accounts Reporting'){
-        	helper.getAllRHBActive(component);                
+        	this.getAllRHBAct();               
         	}
         else if(report === 'NPS Activity Report' || report.includes("PDPM")){
-            helper.getAllNPSPDPMActive(component);
+            this.getAllNPSPDPMActive();
         	}            
     	}
     
     onTabChangeI(){
         this.letterStart = "i";
         this.letterEnd = "j";
-        var report = component.find("InputSelectReport").get("v.value");
+        var report = this.selectedReport;
         if(report === 'All Accounts Reporting'){
-        	helper.getAllRHBActive(component);                
+        	this.getAllRHBAct();               
         	}
         else if(report === 'NPS Activity Report' || report.includes("PDPM")){
-            helper.getAllNPSPDPMActive(component);
+            this.getAllNPSPDPMActive();
         	}            
     	}
     
     onTabChangeJ(){
         this.letterStart = "j";
         this.letterEnd = "k";
-        var report = component.find("InputSelectReport").get("v.value");
+        var report = this.selectedReport;
         if(report === 'All Accounts Reporting'){
-        	helper.getAllRHBActive(component);                
+        	this.getAllRHBAct();               
         	}
         else if(report === 'NPS Activity Report' || report.includes("PDPM")){
-            helper.getAllNPSPDPMActive(component);
+            this.getAllNPSPDPMActive();
         	}            
     	}
     
     onTabChangeK(){
         this.letterStart = "k";
         this.letterEnd = "l";
-        var report = component.find("InputSelectReport").get("v.value");
+        var report = this.selectedReport;
         if(report === 'All Accounts Reporting'){
-        	helper.getAllRHBActive(component);                
+        	this.getAllRHBAct();               
         	}
         else if(report === 'NPS Activity Report' || report.includes("PDPM")){
-            helper.getAllNPSPDPMActive(component);
+            this.getAllNPSPDPMActive();
         	}            
     	}
     
     onTabChangeL(){
         this.letterStart = "l";
         this.letterEnd = "m";
-        var report = component.find("InputSelectReport").get("v.value");
+        var report = this.selectedReport;
         if(report === 'All Accounts Reporting'){
-        	helper.getAllRHBActive(component);                
+        	this.getAllRHBAct();               
         	}
         else if(report === 'NPS Activity Report' || report.includes("PDPM")){
-            helper.getAllNPSPDPMActive(component);
+            this.getAllNPSPDPMActive();
         	}            
     	}
     
     onTabChangeM(){
         this.letterStart = "m";
         this.letterEnd = "n";
-        var report = component.find("InputSelectReport").get("v.value");
+        var report = this.selectedReport;
         if(report === 'All Accounts Reporting'){
-        	helper.getAllRHBActive(component);                
+        	this.getAllRHBAct();               
         	}
         else if(report === 'NPS Activity Report' || report.includes("PDPM")){
-            helper.getAllNPSPDPMActive(component);
+            this.getAllNPSPDPMActive();
         	}            
     	}
     
     onTabChangeN(){
         this.letterStart = "n";
         this.letterEnd = "o";
-        var report = component.find("InputSelectReport").get("v.value");
+        var report = this.selectedReport;
         if(report === 'All Accounts Reporting'){
-        	helper.getAllRHBActive(component);                
+        	this.getAllRHBAct();               
         	}
         else if(report === 'NPS Activity Report' || report.includes("PDPM")){
-            helper.getAllNPSPDPMActive(component);
+            this.getAllNPSPDPMActive();
         	}            
     	}
     
     onTabChangeO(){
         this.letterStart = "o";
         this.letterEnd = "p";
-        var report = component.find("InputSelectReport").get("v.value");
+        var report = this.selectedReport;
         if(report === 'All Accounts Reporting'){
-        	helper.getAllRHBActive(component);                
+        	this.getAllRHBAct();               
         	}
         else if(report === 'NPS Activity Report' || report.includes("PDPM")){
-            helper.getAllNPSPDPMActive(component);
+            this.getAllNPSPDPMActive();
         	}           
     	}
     
     onTabChangeP(){
         this.letterStart = "p";
         this.letterEnd = "q";
-        var report = component.find("InputSelectReport").get("v.value");
+        var report = this.selectedReport;
         if(report === 'All Accounts Reporting'){
-        	helper.getAllRHBActive(component);                
+        	this.getAllRHBAct();               
         	}
         else if(report === 'NPS Activity Report' || report.includes("PDPM")){
-            helper.getAllNPSPDPMActive(component);
+            this.getAllNPSPDPMActive();
         	}            
     	}
     
     onTabChangeQ(){
         this.letterStart = "q";
         this.letterEnd = "r";
-        var report = component.find("InputSelectReport").get("v.value");
+        var report = this.selectedReport;
         if(report === 'All Accounts Reporting'){
-        	helper.getAllRHBActive(component);                
+        	this.getAllRHBAct();               
         	}
         else if(report === 'NPS Activity Report' || report.includes("PDPM")){
-            helper.getAllNPSPDPMActive(component);
+            this.getAllNPSPDPMActive();
         	}            
     	}
     
     onTabChangeR(){
         this.letterStart = "r";
         this.letterEnd = "s";
-        var report = component.find("InputSelectReport").get("v.value");
+        var report = this.selectedReport;
         if(report === 'All Accounts Reporting'){
-        	helper.getAllRHBActive(component);                
+        	this.getAllRHBAct();               
         	}
         else if(report === 'NPS Activity Report' || report.includes("PDPM")){
-            helper.getAllNPSPDPMActive(component);
+            this.getAllNPSPDPMActive();
         	}            
     	}
     
     onTabChangeS(){
         this.letterStart = "s";
         this.letterEnd = "t";
-        var report = component.find("InputSelectReport").get("v.value");
+        var report = this.selectedReport;
         if(report === 'All Accounts Reporting'){
-        	helper.getAllRHBActive(component);                
+        	this.getAllRHBAct();               
         	}
         else if(report === 'NPS Activity Report' || report.includes("PDPM")){
-            helper.getAllNPSPDPMActive(component);
+            this.getAllNPSPDPMActive();
         	}            
     	}
     
     onTabChangeT(){
         this.letterStart = "t";
         this.letterEnd = "u";
-        var report = component.find("InputSelectReport").get("v.value");
+        var report = this.selectedReport;
         if(report === 'All Accounts Reporting'){
-        	helper.getAllRHBActive(component);                
+        	this.getAllRHBAct();               
         	}
         else if(report === 'NPS Activity Report' || report.includes("PDPM")){
-            helper.getAllNPSPDPMActive(component);
+            this.getAllNPSPDPMActive();
         	}            
     	}
     
     onTabChangeU(){
         this.letterStart = "u";
         this.letterEnd = "v";
-        var report = component.find("InputSelectReport").get("v.value");
+        var report = this.selectedReport;
         if(report === 'All Accounts Reporting'){
-        	helper.getAllRHBActive(component);                
+        	this.getAllRHBAct();               
         	}
         else if(report === 'NPS Activity Report' || report.includes("PDPM")){
-            helper.getAllNPSPDPMActive(component);
+            this.getAllNPSPDPMActive();
         	}            
     	}
 
     onTabChangeV(){
         this.letterStart = "v";
         this.letterEnd = "w";
-        var report = component.find("InputSelectReport").get("v.value");
+        var report = this.selectedReport;
         if(report === 'All Accounts Reporting'){
-        	helper.getAllRHBActive(component);                
+        	this.getAllRHBAct();               
         	}
         else if(report === 'NPS Activity Report' || report.includes("PDPM")){
-            helper.getAllNPSPDPMActive(component);
+            this.getAllNPSPDPMActive();
         	}            
     	}
     
     onTabChangeW(){
         this.letterStart = "w";
         this.letterEnd = "x";
-        var report = component.find("InputSelectReport").get("v.value");
+        var report = this.selectedReport;
         if(report === 'All Accounts Reporting'){
-        	helper.getAllRHBActive(component);                
+        	this.getAllRHBAct();               
         	}
         else if(report === 'NPS Activity Report' || report.includes("PDPM")){
-            helper.getAllNPSPDPMActive(component);
+            this.getAllNPSPDPMActive();
         	}            
     	}
     
     onTabChangeX(){
         this.letterStart = "x";
         this.letterEnd = "y";
-        var report = component.find("InputSelectReport").get("v.value");
+        var report = this.selectedReport;
         if(report === 'All Accounts Reporting'){
-        	helper.getAllRHBActive(component);                
+        	this.getAllRHBAct();               
         	}
         else if(report === 'NPS Activity Report' || report.includes("PDPM")){
-            helper.getAllNPSPDPMActive(component);
+            this.getAllNPSPDPMActive();
         	}            
     	}
     
     onTabChangeY(){
         this.letterStart = "y";
         this.letterEnd = "z";
-        var report = component.find("InputSelectReport").get("v.value");
+        var report = this.selectedReport;
         if(report === 'All Accounts Reporting'){
-        	helper.getAllRHBActive(component);                
+        	this.getAllRHBAct();               
         	}
         else if(report === 'NPS Activity Report' || report.includes("PDPM")){
-            helper.getAllNPSPDPMActive(component);
+            this.getAllNPSPDPMActive();
         	}            
     	}
     
     onTabChangeZ(){
         this.letterStart = "z";
         this.letterEnd = "zz";
-        var report = component.find("InputSelectReport").get("v.value");
+        var report = this.selectedReport;
         if(report === 'All Accounts Reporting'){
-        	helper.getAllRHBActive(component);                
+        	this.getAllRHBAct();               
         	}
         else if(report === 'NPS Activity Report' || report.includes("PDPM")){
-            helper.getAllNPSPDPMActive(component);
+            this.getAllNPSPDPMActive();
         	}            
     	}
     
@@ -1417,32 +967,32 @@ export default class Rhcreports extends LightningElement {
             var ready = this.processingFinished;
             if(ready === true){
                 this.Spinner = true;
-            var a = this.aList;
-            var b = this.bList;
-            var c = this.cList;
-            var d = this.dList;
-            var e = this.eList;
-            var f = this.fList;
-            var g = this.gList;
-            var h = this.hList;
-            var i = this.iList;
-            var j = this.jList;
-            var k = this.kList;
-            var l = this.lList;
-            var m = this.mList;
-            var n = this.nList;
-            var o = this.oList;
-            var p = this.pList;
-            var q = this.qList;
-            var r = this.rList;
-            var s = this.sList;
-            var t = this.tList;
-            var u = this.uList;
-            var v = this.vList;
-            var w = this.wList;
-            var x = this.xList;
-            var y = this.yList;
-            var z = this.zList;
+                var a = this.aList;
+                var b = this.bList;
+                var c = this.cList;
+                var d = this.dList;
+                var e = this.eList;
+                var f = this.fList;
+                var g = this.gList;
+                var h = this.hList;
+                var i = this.iList;
+                var j = this.jList;
+                var k = this.kList;
+                var l = this.lList;
+                var m = this.mList;
+                var n = this.nList;
+                var o = this.oList;
+                var p = this.pList;
+                var q = this.qList;
+                var r = this.rList;
+                var s = this.sList;
+                var t = this.tList;
+                var u = this.uList;
+                var v = this.vList;
+                var w = this.wList;
+                var x = this.xList;
+                var y = this.yList;
+                var z = this.zList;
             
                 if(a != null){
             for(var aa=0; aa< a.length; aa++){
@@ -1574,7 +1124,7 @@ export default class Rhcreports extends LightningElement {
                  	stockData.push(z[zz]);    
     				}
                 }
-                var report = component.find("InputSelectReport").get("v.value");
+                var report = this.selectedReport;
         		
                 if(report === 'All Accounts Reporting'){
         			var csv = helper.convertArrayOfObjectsToCSVAllAccount(component,stockData);
@@ -1606,271 +1156,187 @@ export default class Rhcreports extends LightningElement {
         		}
         }
 
-        getReports() {
-            this.Spinner = true;
-            var action = component.get("c.getReportNames");
-            action.setCallback(this, function(response){
-                var state = response.getState();
-                console.log('=====state======',state);
-                if(component.isValid() && state === "SUCCESS") {
-                        var stringItems = response.getReturnValue();
-                        this.selReports = stringItems; 
-                    this.Spinner = false;
-                        }
-                else if(state === "ERROR"){
-                    this.Spinner = false;
-                    var msgId = component.find("uiMessageid");
-                    $A.util.addClass(msgId, 'toggle');
-                    //Show toast Error
-                    return;
-                    }
-                });
-            $A.enqueueAction(action);
-            }
-        
-        getAccounts() {
-            this.Spinner = true;
-            var action = component.get("c.getAccounts");
-            action.setCallback(this, function(response){
-                var state = response.getState();
-                console.log('=====state======',state);
-                if(component.isValid() && state === "SUCCESS") {
-                        var stringItems = response.getReturnValue();
-                        this.selAccounts = stringItems; 
-                    this.Spinner = false;
-                        }
-                else if(state === "ERROR"){
-                    this.Spinner = false;
-                    var msgId = component.find("uiMessageid");
-                    $A.util.addClass(msgId, 'toggle');
-                    //Show toast Error
-                    return;
-                    }
-                });
-            $A.enqueueAction(action);
-            }
-        
         getDVPTeams(){
             this.dvpList = null;
             this.paginationListDVP = null;
             var pageSize = this.pageSize;
-            var action = this.getDVPTeams;
-            action.setParams({
-                "accName" : component.find("InputSelectAccount").get("v.value")
-                });
-            action.setStorable();
-            action.setCallback(this, function(a){
-                var response = a.getReturnValue();
-                if (response == null || response == "" || response == "[]" || response == "{}"){
-                    var msgId = component.find("uiMessageid");
-                    $A.util.addClass(msgId, 'toggle');
-                    //Show toast Error
-                    return;
-                    } 
-                else{
-                    var repList = response;
-                    var paginationList = [];
-                    this.start = 0;
-                    this.end = pageSize-1;
-                    for(var i=0; i< pageSize; i++){
-                         paginationList.push(response[i]);    
-                        }
-                    this.paginationListDVP = paginationList;
-                    this.dvpList = response;
-                    }
-                });
-            $A.enqueueAction(action);
+            getDVPTeams({
+                        "accName" : this.selectedAccount
+                        }).then(
+                            result=>{
+                                var paginationList = [];
+                                this.start = 0;
+                                this.end = pageSize-1;
+                                for(var i=0; i< pageSize; i++){
+                                    paginationList.push(result[i]);    
+                                    }
+                                this.paginationListDVP = paginationList;
+                                this.dvpList = result;
+                                }
+                            )
+                        .catch(
+                            error=>{
+                                console.log('Get DVP Teams error: ' + error.message);
+                                this.Spinner = false;
+                            }
+                        );
             }
         
         getDVPActivities(){
             this.dvpListAct = null;
             this.paginationListDVPAct = null;
             var pageSize = this.pageSize2;
-            var action = this.getDVPActivities;
-            action.setParams({
-                "accName" : component.find("InputSelectAccount").get("v.value")
-                });
-            action.setStorable();
-            action.setCallback(this, function(a){
-                var response = a.getReturnValue();
-                if (response == null || response == "" || response == "[]" || response == "{}"){
-                    var msgId = component.find("uiMessageid");
-                    $A.util.addClass(msgId, 'toggle');
-                    //Show toast Error
-                    return;
-                    } 
-                else{
-                    var repList = response;
-                    var paginationList = [];
-                    this.start = 0;
-                    this.end = pageSize-1;
-                    for(var i=0; i< pageSize; i++){
-                         paginationList.push(response[i]);    
-                        }
-                    this.paginationListDVPAct = paginationList;
-                    this.dvpListAct = response;
-                    }
-                });
-            $A.enqueueAction(action);
+            getDVPActivities({
+                                "accName" : this.selectedAccount
+                            })
+                            .then(
+                                result=>{
+                                    var paginationList = [];
+                                    this.start = 0;
+                                    this.end = pageSize-1;
+                                    for(var i=0; i< pageSize; i++){
+                                        paginationList.push(result[i]);    
+                                        }
+                                    this.paginationListDVPAct = paginationList;
+                                    this.dvpListAct = result;
+                                    }
+                                )
+                            .catch(
+                                    error=>{
+                                        console.log('Error getting DVP Activities: ' + error.message);
+                                        this.Spinner = false;
+                                    }
+                            );
             }
         
         getRVPTeams(){
             this.rvpList = null;
             this.paginationListRVP = null;
             var pageSize = this.pageSize;
-            var action = this.getRVPTeams;
-            action.setParams({
-                "accName" : component.find("InputSelectAccount").get("v.value")
-                });
-            action.setStorable();
-            action.setCallback(this, function(a){
-                var response = a.getReturnValue();
-                if (response == null || response == "" || response == "[]" || response == "{}"){
-                    var msgId = component.find("uiMessageid");
-                    $A.util.addClass(msgId, 'toggle');
-                    //Show toast Error
-                    return;
-                    } 
-                else{
-                    var repList = response;
-                    var paginationList = [];
-                    this.start = 0;
-                    this.end = pageSize-1;
-                    for(var i=0; i< pageSize; i++){
-                         paginationList.push(response[i]);    
+            getRVPTeams({
+                        "accName" : this.selectedAccount
+                        }).then(
+                            result=>{
+                                var paginationList = [];
+                                this.start = 0;
+                                this.end = pageSize-1;
+                                for(var i=0; i< pageSize; i++){
+                                    paginationList.push(result[i]);    
+                                    }
+                                this.paginationListRVP =  paginationList;
+                                this.rvpList = result;
+                                }
+                        )
+                    .catch(
+                        error=>{
+                            console.log('Error getting RVP Teams: ' + error.message);
+                            this.Spinner = false;
                         }
-                    this.paginationListRVP =  paginationList;
-                    this.rvpList = response;
-                    }
-                });
-            $A.enqueueAction(action);
+                    );
             }
         
         getRVPActivities(){
             this.rvpListAct = null;
             this.paginationListRVPAct = null;
             var pageSize = this.pageSize2;
-            var action = this.getRVPActivities;
-            action.setParams({
-                "accName" : component.find("InputSelectAccount").get("v.value")
-                });
-            action.setStorable();
-            action.setCallback(this, function(a){
-                var response = a.getReturnValue();
-                if (response == null || response == "" || response == "[]" || response == "{}"){
-                    var msgId = component.find("uiMessageid");
-                    $A.util.addClass(msgId, 'toggle');
-                    //Show toast Error
-                    return;
-                    } 
-                else{
-                    var repList = response;
-                    var paginationList = [];
-                    this.start = 0;
-                    this.end = pageSize-1;
-                    for(var i=0; i< pageSize; i++){
-                         paginationList.push(response[i]);    
-                        }
-                    this.paginationListRVPAct = paginationList;
-                    this.rvpListAct = response;
-                    }
-                });
-            $A.enqueueAction(action);
+            getRVPActivities({
+                            "accName" : this.selectedAccount
+                            })
+                        .then(
+                            result=>{
+                                var paginationList = [];
+                                this.start = 0;
+                                this.end = pageSize-1;
+                                for(var i=0; i< pageSize; i++){
+                                    paginationList.push(response[i]);    
+                                    }
+                                this.paginationListRVPAct = paginationList;
+                                this.rvpListAct = response;
+                                }
+                            )
+                        .catch(
+                            error=>{
+                                console.log('Error in getting RVP Activities: ' + error.message);
+                                this.Spinner = false;
+                                }
+                            );
             }
         
         getADOTeams(){
             this.adoList = null;
             this.paginationListADO = null;
             var pageSize = this.pageSize;
-            var action = this.getADOTeams;
-            action.setParams({
-                "accName" : component.find("InputSelectAccount").get("v.value")
-                });
-            action.setStorable();
-            action.setCallback(this, function(a){
-                var response = a.getReturnValue();
-                if (response == null || response == "" || response == "[]" || response == "{}"){
-                    var msgId = component.find("uiMessageid");
-                    $A.util.addClass(msgId, 'toggle');
-                    //Show toast Error
-                    return;
-                    } 
-                else{
-                    var repList = response;
-                    var paginationList = [];
+            getADOTeams({
+                "accName" : this.selectedAccount
+                }).then(
+                    result=>{
+                        var paginationList = [];
                     this.start = 0;
                     this.end = pageSize-1;
                     for(var i=0; i< pageSize; i++){
-                         paginationList.push(response[i]);    
+                         paginationList.push(result[i]);    
                         }
                     this.paginationListADO = paginationList;
-                    this.adoList = response;
+                    this.adoList = result;
                     }
-                });
-            $A.enqueueAction(action);
+                ).catch(
+                    error=>{
+                        console.log('Error getting ADO Teams: ' + error.message);
+                        this.Spinner = false;
+                    }
+                );
             }
         
         getADOActivities(){
             this.adoListAct = null;
             this.paginationListADOAct = null;
             var pageSize = this.pageSize2;
-            var action = this.getADOActivities;
-            action.setParams({
-                "accName" : component.find("InputSelectAccount").get("v.value")
-                });
-            action.setStorable();
-            action.setCallback(this, function(a){
-                var response = a.getReturnValue();
-                if (response == null || response == "" || response == "[]" || response == "{}"){
-                    var msgId = component.find("uiMessageid");
-                    $A.util.addClass(msgId, 'toggle');
-                    //Show toast Error
-                    return;
-                    } 
-                else{
-                    var repList = response;
-                    var paginationList = [];
-                    this.start = 0;
-                    this.end = pageSize-1;
-                    for(var i=0; i< pageSize; i++){
-                         paginationList.push(response[i]);    
-                        }
-                    this.paginationListADOAct = paginationList;
-                    this.adoListAct = response;
-                    }
-                });
-            $A.enqueueAction(action);
+            getADOActivities({
+                            "accName" : this.selectedAccount
+                            })
+                            .then(
+                                result=>{
+                                    var paginationList = [];
+                                    this.start = 0;
+                                    this.end = pageSize-1;
+                                for(var i=0; i< pageSize; i++){
+                                    paginationList.push(result[i]);    
+                                    }
+                                this.paginationListADOAct = paginationList;
+                                this.adoListAct = result;
+                                }
+                            )
+                        .catch(
+                            error=>{
+                                console.log('Error getting ADO Activities: ' + error.message);
+                                this.Spinner = false;
+                            }
+                        );
             }
         
         getFacility(){
-            var action = this.getFacility;
-            action.setParams({
-                            "accName" : component.find("InputSelectAccount").get("v.value")
-                            }); 
-            action.setCallback(this, function(a){
-                var response = a.getReturnValue();
-                if (response == null || response == "" || response == "[]" || response == "{}"){
-                    var msgId = component.find("uiMessageid");
-                    $A.util.addClass(msgId, 'toggle');
-                    //Show toast Error
-                    return;
-                    } 
-                else{
-                    var repList = response;
-                    this.facility = repList;
-                    }
-                });
-            $A.enqueueAction(action);
+            getFacility({
+                        "accName" : this.selectedAccount
+                        })
+                        .then(
+                            result=>{
+                                this.facility = result;
+                            }
+                        )
+                        .catch(
+                            error=>{
+                                console.log('Error getting facility: ' + error.message);
+                                this.Spinner = false;
+                            }
+                        );
             }
         
         disableSelectAccount(){
-            var inputSelReport = component.find("InputSelectReport");
-            var inputAcc = component.find("InputSelectAccount");
-            if(component.find("InputSelectReport").get("v.value") == 'Contacts Reporting' || component.find("InputSelectReport").get("v.value") == 'Activity Reporting'){
-                 inputAcc.set("v.disabled", false); 
+            if(this.selectedReport == 'Contacts Reporting' || this.selectedReport == 'Activity Reporting'){
+                this.accSelectDisabled = false; 
                 }
             else{
-                inputAcc.set("v.disabled", true);
+                this.accSelectDisabled =  true;
                 }
             }
         
@@ -1879,35 +1345,29 @@ export default class Rhcreports extends LightningElement {
             this.tableData = null;
             this.paginationList = null;
             var pageSize = this.pageSize;
-            var action = this.getReportTable;
-            action.setParams({
-                "selReport" : component.find("InputSelectReport").get("v.value"),
-                "accName" : component.find("InputSelectAccount").get("v.value")
-                });
-            action.setStorable();
-            action.setCallback(this, function(a){
-                var response = a.getReturnValue();
-                if (response == null || response == "" || response == "[]" || response == "{}"){
-                    var msgId = component.find("uiMessageid");
-                    $A.util.addClass(msgId, 'toggle');
-                    //Show toast Error
-                    this.Spinner = false;
-                    return;
-                    } 
-                else{
-                    var repList = response;
-                    var paginationList = [];
-                    this.start = 0;
-                    this.end = pageSize-1;
-                    for(var i=0; i< pageSize; i++){
-                         paginationList.push(response[i]);    
+            getReportTable({
+                            "selReport" : this.selectedReport,
+                            "accName" : this.selectedAccount
+                            })
+                    .then(
+                        result=>{
+                            var paginationList = [];
+                            this.start = 0;
+                            this.end = pageSize-1;
+                            for(var i=0; i< pageSize; i++){
+                                paginationList.push(result[i]);    
+                                }
+                            this.paginationList = paginationList;
+                            this.tableData = result;
+                            this.Spinner = false;
                         }
-                    this.paginationList = paginationList;
-                    this.tableData = response;
-                    this.Spinner = false;
-                    }
-                });
-            $A.enqueueAction(action);
+                    )
+                    .catch(
+                        error=>{
+                            console.log('Error getting report: ' + error.message);
+                            this.Spinner = false;
+                        }
+                    );
             }
         
         next(){
@@ -2075,74 +1535,86 @@ export default class Rhcreports extends LightningElement {
                     this.adoListAct = records;
             }
         
-        getAllRHBActive(){
+        getAllRHBAct(){
             this.Spinner = true;
             this.accountTeamAndADO = null;
-            var action = this.getAllRHBActive;
-            action.setParams({
+                getAllRHBActive({
                                 "letterStart" : this.letterStart,
                                 "letterEnd" : this.letterEnd,
                                 "ADO_Filter" : this.selectedADO,
                                 "RVP_Filter" : this.selectedRVP,
                                 "DVP_Filter" : this.selectedDVP
-                                });
-            action.setStorable();
-            action.setCallback(this, function(a){
-                var response = a.getReturnValue();
-                if (response == null || response == "" || response == "[]" || response == "{}"){
-                    var msgId = component.find("uiMessageid");
-                    $A.util.addClass(msgId, 'toggle');
-                    //Show toast Error
-                    this.Spinner = false;
-                    return;
-                    } 
-                else{
-                    var repList = response;
-                    this.accountTeamAndADO = response;
-                    this.Spinner = false;
-                    }
-                });
-            $A.enqueueAction(action);
-            }
+                                })
+                    .then(
+                        result=>{
+                            var repList = result;
+                            this.accountTeamAndADO = repList;
+                            this.Spinner = false;
+                            }
+                        )
+                    .catch(
+                        error=>{
+                            console.log('Error getting allRHBActive: ' + error.message);
+                            this.Spinner = false;
+                            }
+                        );
+                }
         
         getAllNPSPDPMActive(){
             this.Spinner = true;
             this.NPSActivityList = null;
-            var report = component.find("InputSelectReport").get("v.value");
+            var report = this.selectedReport;
             if(report === 'NPS Activity Report'){
-                var action = component.get("c.getNPSTasks");
-                }
+                getNPSTasks({
+                            "letterStart" : this.letterStart,
+                            "letterEnd" : this.letterEnd,
+                            "ADO_Filter" : this.selectedADO,
+                            "RVP_Filter" : this.selectedRVP,
+                            "DVP_Filter" : this.selectedDVP,
+                            "reportName" : report
+                            }
+                            )
+                            .then(
+                                result=>{
+                                    var repList = result;
+                                    this.NPSActivityList = repList;
+                                    this.Spinner = false;
+                                    }
+                            )
+                    .catch(
+                        error=>{
+                            console.log('Error Getting NPS Activity Report: ' + error.message);
+                            this.Spinner = false;
+                            }
+                        );
+                    }
             else if(report.includes("PDPM")){
-                var action = component.get("c.getPDPMTasks");
-                }
-            action.setParams({
-                                "letterStart" : this.letterStart,
-                                "letterEnd" : this.letterEnd,
-                                "ADO_Filter" : this.selectedADO,
-                                "RVP_Filter" : this.selectedRVP,
-                                "DVP_Filter" : this.selectedDVP,
-                                "reportName" : report
-                                });
-            action.setStorable();
-            action.setCallback(this, function(a){
-                var response = a.getReturnValue();
-                if (response == null || response == "" || response == "[]" || response == "{}"){
-                    var msgId = component.find("uiMessageid");
-                    $A.util.addClass(msgId, 'toggle');
-                    //Show toast Error
-                    this.Spinner =  false;
-                    return;
-                    } 
-                else{
-                    var repList = response;
-                    this.NPSActivityList = response;
+                getPDPMTasks({
+                    "letterStart" : this.letterStart,
+                    "letterEnd" : this.letterEnd,
+                    "ADO_Filter" : this.selectedADO,
+                    "RVP_Filter" : this.selectedRVP,
+                    "DVP_Filter" : this.selectedDVP,
+                    "reportName" : report
+                    }
+                    )
+                    .then(
+                        result=>{
+                            var repList = result;
+                            this.NPSActivityList = repList;
+                            this.Spinner = false;
+                            }
+                    )
+            .catch(
+                error=>{
+                    console.log('Error Getting PDPMTasks Report: ' + error.message);
                     this.Spinner = false;
                     }
-                });
-            $A.enqueueAction(action);
+                    );
+                }
             }
         
-        convertArrayOfObjectsToCSVAllAccount(component,objectRecords){
+        convertArrayOfObjectsToCSVAllAccount(objectRecords){
             // declare variables
             var csvStringResult, counter, keys, columnDivider, lineDivider;
             console.log('objectRecords Processing: ' + objectRecords);
@@ -2610,77 +2082,7 @@ export default class Rhcreports extends LightningElement {
             return csvStringResult;        
             }
         
-        getADOList(){
-            var action = component.get("c.getADOs");
-            action.setCallback(this, function(response){
-                var state = response.getState();
-                console.log('=====state======',state);
-                if(component.isValid() && state === "SUCCESS") {
-                        var stringItems = response.getReturnValue();
-                    
-                    var options = [];
-                    for(var i = 0; i < stringItems.length; i++){ 
-                        options.push({ value: stringItems[i], label: stringItems[i]});
-                    }
-                    this.adoListChoose = options; 
-                        }
-                else if(state === "ERROR"){
-                    var msgId = component.find("uiMessageid");
-                    $A.util.addClass(msgId, 'toggle');
-                    //Show toast Error
-                    return;
-                    }
-                });
-            $A.enqueueAction(action);
-            }
-                
-        getRVPList(){
-            var action = component.get("c.getRVPs");
-            action.setCallback(this, function(response){
-                var state = response.getState();
-                console.log('=====state======',state);
-                if(component.isValid() && state === "SUCCESS") {
-                        var stringItems = response.getReturnValue();
-                    var options = [];
-                    for(var i = 0; i < stringItems.length; i++){ 
-                        options.push({ value: stringItems[i], label: stringItems[i]});
-                    }
-                        this.rvpListChoose = options; 
-                        }
-                else if(state === "ERROR"){
-                    var msgId = component.find("uiMessageid");
-                    $A.util.addClass(msgId, 'toggle');
-                    //Show toast Error
-                    return;
-                    }
-                });
-            $A.enqueueAction(action);
-            }
-        
-        getDVPList(){
-            var action = component.get("c.getDVPs");
-            action.setCallback(this, function(response){
-                var state = response.getState();
-                console.log('=====state======',state);
-                if(component.isValid() && state === "SUCCESS") {
-                        var stringItems = response.getReturnValue();
-                    var options = [];
-                    for(var i = 0; i < stringItems.length; i++){ 
-                        options.push({ value: stringItems[i], label: stringItems[i]});
-                    }
-                        this.dvpListChoose = options; 
-                        }
-                else if(state === "ERROR"){
-                    var msgId = component.find("uiMessageid");
-                    $A.util.addClass(msgId, 'toggle');
-                    //Show toast Error
-                    return;
-                    }
-                });
-            $A.enqueueAction(action);
-            }
-        
-        getAllRHBRows(component, startLetter){
+        getAllRHBRows(startLetter){
             var start;
             var end;
             if(startLetter === 'A'){
@@ -2822,100 +2224,104 @@ export default class Rhcreports extends LightningElement {
                 end = 'zz';
                 this.wList = null;
                 }
-            var action = component.get("c.getAllRHBActive");
-            action.setParams({
-                                "letterStart" : start,
-                                "letterEnd" : end,
-                                "ADO_Filter" : component.get("v.selectedADO", "v.value"),
-                                "RVP_Filter" : component.get("v.selectedRVP", "v.value"),
-                                "DVP_Filter" : component.get("v.selectedDVP", "v.value")
-                                });
-            return new Promise(function (resolve, reject) {
-            action.setCallback(this, function(a){
-                var response = a.getReturnValue();
-                
-                    var repList = response;
-                    if(startLetter === 'A'){
-                this.aList = repList;
-                }
-            else if(startLetter === 'B'){
-                this.bList = repList;
-                }
-            else if(startLetter === 'C'){
-                this.cList = repList;
-                }
-            else if(startLetter === 'D'){
-                this.dList = repList;
-                }
-            else if(startLetter === 'E'){
-                this.eList = repList;
-                }
-            else if(startLetter === 'F'){
-                this.fList = repList;
-                }
-            else if(startLetter === 'G'){
-                this.gList = repList;
-                }
-            else if(startLetter === 'H'){
-                this.hList = repList;
-                }
-            else if(startLetter === 'I'){
-                this.iList = repList;
-                }
-            else if(startLetter === 'J'){
-                this.jList = repList;
-                }
-            else if(startLetter === 'K'){
-                this.kList = repList;
-                }
-            else if(startLetter === 'L'){
-                this.lList = repList;
-                }
-            else if(startLetter === 'M'){
-                this.mList = repList;
-                }
-            else if(startLetter === 'N'){
-                this.nList = repList;
-                }
-            else if(startLetter === 'O'){
-                this.oList = repList;
-                }
-            else if(startLetter === 'P'){
-                this.pList = repList;
-                }
-            else if(startLetter === 'Q'){
-                this.qList = repList;
-                }
-            else if(startLetter === 'R'){
-                this.rList = repList;
-                }
-            else if(startLetter === 'S'){
-                this.sList = repList;
-                }
-            else if(startLetter === 'T'){
-                this.tList = repList;
-                }
-            else if(startLetter === 'U'){
-                this.uList = repList;
-                }
-            else if(startLetter === 'V'){
-                this.vList = repList;
-                }
-            else if(startLetter === 'W'){
-                this.wList = repList;
-                this.processingFinished = true;
-                console.log("Processing Done");
-                }resolve("Resolved");
-                    
-                });
-            $A.enqueueAction(action);
-                });
+            getAllRHBActive(
+                            {
+                            "letterStart" : start,
+                            "letterEnd" : end,
+                            "ADO_Filter" : this.selectedADO,
+                            "RVP_Filter" : this.selectedRVP,
+                            "DVP_Filter" : this.selectedDVP
+                            }
+                            )
+                    .then(
+                        result=>{
+                            var response = result;
+                            var repList = response;
+                        if(startLetter === 'A'){
+                            this.aList = repList;
+                            }
+                        else if(startLetter === 'B'){
+                            this.bList = repList;
+                            }
+                        else if(startLetter === 'C'){
+                            this.cList = repList;
+                            }
+                        else if(startLetter === 'D'){
+                            this.dList = repList;
+                            }
+                        else if(startLetter === 'E'){
+                            this.eList = repList;
+                            }
+                        else if(startLetter === 'F'){
+                            this.fList = repList;
+                            }
+                        else if(startLetter === 'G'){
+                            this.gList = repList;
+                            }
+                        else if(startLetter === 'H'){
+                            this.hList = repList;
+                            }
+                        else if(startLetter === 'I'){
+                            this.iList = repList;
+                            }
+                        else if(startLetter === 'J'){
+                            this.jList = repList;
+                            }
+                        else if(startLetter === 'K'){
+                            this.kList = repList;
+                            }
+                        else if(startLetter === 'L'){
+                            this.lList = repList;
+                            }
+                        else if(startLetter === 'M'){
+                            this.mList = repList;
+                            }
+                        else if(startLetter === 'N'){
+                            this.nList = repList;
+                            }
+                        else if(startLetter === 'O'){
+                            this.oList = repList;
+                            }
+                        else if(startLetter === 'P'){
+                            this.pList = repList;
+                            }
+                        else if(startLetter === 'Q'){
+                            this.qList = repList;
+                            }
+                        else if(startLetter === 'R'){
+                            this.rList = repList;
+                            }
+                        else if(startLetter === 'S'){
+                            this.sList = repList;
+                            }
+                        else if(startLetter === 'T'){
+                            this.tList = repList;
+                            }
+                        else if(startLetter === 'U'){
+                            this.uList = repList;
+                            }
+                        else if(startLetter === 'V'){
+                            this.vList = repList;
+                            }
+                        else if(startLetter === 'W'){
+                            this.wList = repList;
+                            this.processingFinished = true;
+                            console.log("Processing Done");
+                            }
+                        }
+                        )
+                .catch(
+                    error=>{
+                        console.log('Error processing list: ' + error.message);
+                        this.Spinner = false;
+                        }
+                    );
             }
         
         getAllNPSPDPMRows(component, startLetter){
             var start;
             var end;
-            var selectedReport = component.find("InputSelectReport").get("v.value");
+            var selectedReport = this.selectedReport;
             if(startLetter === 'A'){
                 console.log('A');
                 this.processingFinished = false;
@@ -3056,99 +2462,187 @@ export default class Rhcreports extends LightningElement {
                 this.wList = null;
                 }
             if(selectedReport.includes("PDPM")){
-                var action = component.get("c.getPDPMTasks");
+                getPDPMTasks({
+                    "letterStart" : start,
+                    "letterEnd" : end,
+                    "ADO_Filter" : component.get("v.selectedADO", "v.value"),
+                    "RVP_Filter" : component.get("v.selectedRVP", "v.value"),
+                    "DVP_Filter" : component.get("v.selectedDVP", "v.value"),
+                    "reportName" : selectedReport
+                    })
+                    .then(
+                        result=>{
+                            var repList = result;
+                            if(startLetter === 'A'){
+                                this.aList = repList;
+                                }
+                            else if(startLetter === 'B'){
+                                this.bList = repList;
+                                }
+                            else if(startLetter === 'C'){
+                                this.cList = repList;
+                                }
+                            else if(startLetter === 'D'){
+                                this.dList = repList;
+                                }
+                            else if(startLetter === 'E'){
+                                this.eList = repList;
+                                }
+                            else if(startLetter === 'F'){
+                                this.fList = repList;
+                                }
+                            else if(startLetter === 'G'){
+                                this.gList = repList;
+                                }
+                            else if(startLetter === 'H'){
+                                this.hList = repList;
+                                }
+                            else if(startLetter === 'I'){
+                                this.iList = repList;
+                                }
+                            else if(startLetter === 'J'){
+                                this.jList = repList;
+                                }
+                            else if(startLetter === 'K'){
+                                this.kList = repList;
+                                }
+                            else if(startLetter === 'L'){
+                                this.lList = repList;
+                                }
+                            else if(startLetter === 'M'){
+                                this.mList = repList;
+                                }
+                            else if(startLetter === 'N'){
+                                this.nList = repList;
+                                }
+                            else if(startLetter === 'O'){
+                                this.oList = repList;
+                                }
+                            else if(startLetter === 'P'){
+                                this.pList = repList;
+                                }
+                            else if(startLetter === 'Q'){
+                                this.qList = repList;
+                                }
+                            else if(startLetter === 'R'){
+                                this.rList = repList;
+                                }
+                            else if(startLetter === 'S'){
+                                this.sList = repList;
+                                }
+                            else if(startLetter === 'T'){
+                                this.tList = repList;
+                                }
+                            else if(startLetter === 'U'){
+                                this.uList = repList;
+                                }
+                            else if(startLetter === 'V'){
+                                this.vList = repList;
+                                }
+                            else if(startLetter === 'W'){
+                                this.wList = repList;
+                                this.processingFinished = true;
+                                console.log("Processing Done");
+                                }
+                                }
+                        )
+                    .catch(
+                        error=>{
+                            console.log('Error processing PDPM Tasks: ' + error.message);
+                            }
+                    );
                 }
             else{
-                var action = component.get("c.getNPSTasks");
+                getNPSTasks({
+                            "letterStart" : start,
+                            "letterEnd" : end,
+                            "ADO_Filter" : component.get("v.selectedADO", "v.value"),
+                            "RVP_Filter" : component.get("v.selectedRVP", "v.value"),
+                            "DVP_Filter" : component.get("v.selectedDVP", "v.value"),
+                            "reportName" : selectedReport
+                        })
+                    .then(
+                        result=>{
+                            var repList = result;
+                            if(startLetter === 'A'){
+                                this.aList = repList;
+                                }
+                            else if(startLetter === 'B'){
+                                this.bList = repList;
+                                }
+                            else if(startLetter === 'C'){
+                                this.cList = repList;
+                                }
+                            else if(startLetter === 'D'){
+                                this.dList = repList;
+                                }
+                            else if(startLetter === 'E'){
+                                this.eList = repList;
+                                }
+                            else if(startLetter === 'F'){
+                                this.fList = repList;
+                                }
+                            else if(startLetter === 'G'){
+                                this.gList = repList;
+                                }
+                            else if(startLetter === 'H'){
+                                this.hList = repList;
+                                }
+                            else if(startLetter === 'I'){
+                                this.iList = repList;
+                                }
+                            else if(startLetter === 'J'){
+                                this.jList = repList;
+                                }
+                            else if(startLetter === 'K'){
+                                this.kList = repList;
+                                }
+                            else if(startLetter === 'L'){
+                                this.lList = repList;
+                                }
+                            else if(startLetter === 'M'){
+                                this.mList = repList;
+                                }
+                            else if(startLetter === 'N'){
+                                this.nList = repList;
+                                }
+                            else if(startLetter === 'O'){
+                                this.oList = repList;
+                                }
+                            else if(startLetter === 'P'){
+                                this.pList = repList;
+                                }
+                            else if(startLetter === 'Q'){
+                                this.qList = repList;
+                                }
+                            else if(startLetter === 'R'){
+                                this.rList = repList;
+                                }
+                            else if(startLetter === 'S'){
+                                this.sList = repList;
+                                }
+                            else if(startLetter === 'T'){
+                                this.tList = repList;
+                                }
+                            else if(startLetter === 'U'){
+                                this.uList = repList;
+                                }
+                            else if(startLetter === 'V'){
+                                this.vList = repList;
+                                }
+                            else if(startLetter === 'W'){
+                                this.wList = repList;
+                                this.processingFinished = true;
+                                console.log("Processing Done");
+                                }
+                                }
+                        )
+                    .catch(
+                        error=>{
+                            console.log('Error processing NPS Tasks: ' + error.message);
+                            }
+                    );
                 }
-            action.setParams({
-                                "letterStart" : start,
-                                "letterEnd" : end,
-                                "ADO_Filter" : component.get("v.selectedADO", "v.value"),
-                                "RVP_Filter" : component.get("v.selectedRVP", "v.value"),
-                                "DVP_Filter" : component.get("v.selectedDVP", "v.value"),
-                                "reportName" : selectedReport
-                                });
-            return new Promise(function (resolve, reject) {
-            action.setCallback(this, function(a){
-                var response = a.getReturnValue();
-                
-                    var repList = response;
-                    if(startLetter === 'A'){
-                this.aList = repList;
-                }
-            else if(startLetter === 'B'){
-                this.bList = repList;
-                }
-            else if(startLetter === 'C'){
-                this.cList = repList;
-                }
-            else if(startLetter === 'D'){
-                this.dList = repList;
-                }
-            else if(startLetter === 'E'){
-                this.eList = repList;
-                }
-            else if(startLetter === 'F'){
-                this.fList = repList;
-                }
-            else if(startLetter === 'G'){
-                this.gList = repList;
-                }
-            else if(startLetter === 'H'){
-                this.hList = repList;
-                }
-            else if(startLetter === 'I'){
-                this.iList = repList;
-                }
-            else if(startLetter === 'J'){
-                this.jList = repList;
-                }
-            else if(startLetter === 'K'){
-                this.kList = repList;
-                }
-            else if(startLetter === 'L'){
-                this.lList = repList;
-                }
-            else if(startLetter === 'M'){
-                this.mList = repList;
-                }
-            else if(startLetter === 'N'){
-                this.nList = repList;
-                }
-            else if(startLetter === 'O'){
-                this.oList = repList;
-                }
-            else if(startLetter === 'P'){
-                this.pList = repList;
-                }
-            else if(startLetter === 'Q'){
-                this.qList = repList;
-                }
-            else if(startLetter === 'R'){
-                this.rList = repList;
-                }
-            else if(startLetter === 'S'){
-                this.sList = repList;
-                }
-            else if(startLetter === 'T'){
-                this.tList = repList;
-                }
-            else if(startLetter === 'U'){
-                this.uList = repList;
-                }
-            else if(startLetter === 'V'){
-                this.vList = repList;
-                }
-            else if(startLetter === 'W'){
-                this.wList = repList;
-                this.processingFinished = true;
-                console.log("Processing Done");
-                }resolve("Resolved");
-                    
-                });
-            $A.enqueueAction(action);
-                });
             }
         
         convertArrayOfObjectsToCSVNPS(objectRecords){

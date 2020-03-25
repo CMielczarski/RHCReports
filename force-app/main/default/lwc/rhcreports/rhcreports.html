@@ -13,11 +13,11 @@
         <div class="slds-form-element reportDiv paddingleft" style="width: 200px">
             <div class="slds-form-element__label">Report:</div>
             <div>
-                <ui:inputSelect class="slds-select" onchange={onReportChange} id="InputSelectReport">
+                <select class="slds-select" onchange={onReportChange} id="InputSelectReport">
                     <template for:each={selReports} for:item="reportVal"> 
-                        <ui:inputSelectOption text={reportVal}></ui:inputSelectOption> 
+                        <option value={reportVal} title={reportVal} key={reportVal}></option> 
                     </template>
-                </ui:inputSelect>
+                </select>
                 <br/>
             </div>
         </div>
@@ -27,11 +27,11 @@
         <div class="slds-form-element roleDiv" style="width: 300px">
             <div class="slds-form-element__label">Accounts: </div>
             <div>
-                <ui:inputSelect class="slds-select" id="InputSelectAccount" disabled="true" >
+                <select class="slds-select" name="InputSelectAccount" disabled={accSelectDisabled} onchange={getFormInputChange}>
                     <template for:each={selAccounts} for:item="accountName"> 
-                        <ui:inputSelectOption text={accountName}></ui:inputSelectOption> 
+                        <option value={accountName} title={accountName} key={accountName}></option> 
                     </template>
-                </ui:inputSelect>
+                </select>
             </div>
         </div>
     </div>
@@ -87,7 +87,7 @@
     <br/>
     
     <div>
-        <template if:true="{!v.facility != null}">
+        <template if:true={showFacility}>
             <table class="slds-table slds-table--bordered slds-table--cell-buffer">
                 <thead>
                     <tr class="slds-text-title--caps">
@@ -264,7 +264,7 @@
         </template>
         
         <template if:true={report2}>
-            <template if:true="{!v.paginationListDVPAct != null}">
+            <template if:true={showPageListDVPAct}>
                 <div class="slds-p-around--large">
                     DVPs
                     <table class="slds-table slds-table--bordered slds-table--cell-buffer">
@@ -306,18 +306,18 @@
                                         
                                         <th >
                                             
-                                            <div class="slds-truncate" title={dvp.Type}>{!dvp.Type}</div>
+                                            <div class="slds-truncate" title={dvp.Type}><lightning-formatted-text value={dvp.Type}></lightning-formatted-text></div>
                                             
                                         </th>
                                         
                                         <th >
                                             
-                                            <div class="slds-truncate" title={dvp.StartDateTime}><lightning-formatted-date-time id="dvpDate" value={dvp.StartDateTime}></lightning-formatted-date-time></div>
+                                            <div class="slds-truncate" title={dvp.StartDateTime}><lightning-formatted-date-time value={dvp.StartDateTime}></lightning-formatted-date-time></div>
                                             
                                         </th>
                                         
                                         <th >
-                                            <div class="slds-truncate" title={dvp.Description}>{!dvp.Description}</div>
+                                            <div class="slds-truncate" title={dvp.Description}><lightning-formatted-text value={dvp.Description}></lightning-formatted-text></div>
                                             
                                         </th>
                                     </tr>
@@ -326,7 +326,7 @@
                     </table>
                 </div>
             </template>
-            <template if:true="{!v.paginationListRVPAct != null}">
+            <template if:true={showPageListRVPAct}>
                 <div class="slds-p-around--large">
                     RVPs
                     <table class="slds-table slds-table--bordered slds-table--cell-buffer">
@@ -366,16 +366,16 @@
                                         </th>
                                         
                                         <th>
-                                            <div class="slds-truncate" title={rvp.Type}>{rvp.Type}</div>
+                                            <div class="slds-truncate" title={rvp.Type}><lightning-formatted-text value={rvp.Type}></lightning-formatted-text></div>
                                         </th>
                                         
                                         <th>
-                                            <div class="slds-truncate" title={rvp.StartDateTime}><lightning-formatted-date-time id="rvpDate" value={rvp.StartDateTime}></lightning-formatted-date-time></div>
+                                            <div class="slds-truncate" title={rvp.StartDateTime}><lightning-formatted-date-time value={rvp.StartDateTime}></lightning-formatted-date-time></div>
                                             
                                         </th>
                                         
                                         <th >
-                                            <div class="slds-truncate" title={rvp.Description}>{rvp.Description}</div>
+                                            <div class="slds-truncate" title={rvp.Description}><lightning-formatted-text value={rvp.Description}></lightning-formatted-text></div>
                                         </th>
                                     </tr>
                             </template>
@@ -383,31 +383,31 @@
                     </table>
                 </div>
             </template>
-            <template if:true="{!v.paginationListADOAct != null}">
+            <template if:true={showPageListADOAct}>
                 <div class="slds-p-around--large">
                     ADOs
                     <table class="slds-table slds-table--bordered slds-table--cell-buffer">
                         <thead>
                             <tr class="slds-text-title--caps">
-                                <th class="slds-is-sortable slds-text-title--caps" scope="col" onclick="{!c.sortADOName}">
+                                <th class="slds-is-sortable slds-text-title--caps" scope="col" onclick={sortADOName}>
                                     <a href="javascript:void(0);" class="slds-th__action slds-text-link--reset">
                                         <div class="slds-truncate" title="First Name">Activity Owner</div>
                                     </a>
                                 </th>
                                 
-                                <th class="slds-is-sortable slds-text-title--caps" scope="col" onclick="{!c.sortADOType}">
+                                <th class="slds-is-sortable slds-text-title--caps" scope="col" onclick={sortADOType}>
                                     <a href="javascript:void(0);" class="slds-th__action slds-text-link--reset">
                                         <div class="slds-truncate" title="First Name">Activity Type</div>
                                     </a>
                                 </th>
                                 
-                                <th class="slds-is-sortable slds-text-title--caps" scope="col" onclick="{!c.sortADODate}">
+                                <th class="slds-is-sortable slds-text-title--caps" scope="col" onclick={sortADODate}>
                                     <a href="javascript:void(0);" class="slds-th__action slds-text-link--reset">
                                         <div class="slds-truncate" title="First Name">Date</div>
                                     </a>
                                 </th>
                                 
-                                <th class="slds-is-sortable slds-text-title--caps" scope="col" onclick="{!c.sortADODescription}">
+                                <th class="slds-is-sortable slds-text-title--caps" scope="col" onclick={sortADODescription}>
                                     <a href="javascript:void(0);" class="slds-th__action slds-text-link--reset">
                                         <div class="slds-truncate" title="Department">Description</div>
                                     </a>
@@ -421,13 +421,13 @@
                                             <div class="slds-truncate" title={ado.name}><lightning-formatted-url value={ado.Owner.Id} label={ado.Owner.Name} onclick={openItem} target="_blank"></lightning-formatted-url></div>
                                         </th>
                                         <th scope="row">
-                                            <div class="slds-truncate" title={ado.Type}>{ado.Type}</div>
+                                            <div class="slds-truncate" title={ado.Type}><lightning-formatted-text value={ado.Type}></lightning-formatted-text></div>
                                         </th>
                                         <th scope="row">
-                                            <div class="slds-truncate" title={ado.StartDateTime}><lightning-formatted-date-time id="adoDate" value={ado.StartDateTime}></lightning-formatted-date-time></div>
+                                            <div class="slds-truncate" title={ado.StartDateTime}><lightning-formatted-date-time value={ado.StartDateTime}></lightning-formatted-date-time></div>
                                         </th>
                                         <th scope="row">
-                                            <div class="slds-truncate" title={ado.Description}>{ado.Description}</div>
+                                            <div class="slds-truncate" title={ado.Description}><lightning-formatted-text value={ado.Description}></lightning-formatted-text></div>
                                         </th>
                                     </tr>
                             </template>
@@ -470,10 +470,10 @@
             <br/>
             <br/>
             <template for:each={accountTeamAndADO} for:item="con">
-                <template if:true="{!con.accSize > 0}">
-            <table class="slds-table slds-table--bordered slds-table--cell-buffer">
-                	<thead>
-                    	<tr class="slds-text-title--caps" key={con.Id}>
+                <template if:true={showCon}>
+            <table class="slds-table slds-table--bordered slds-table--cell-buffer" key={con.Id}>
+                	<thead >
+                    	<tr class="slds-text-title--caps">
                         	<th scope="row">
                             	<div class="slds-truncate" title={con.a.Name}>Account: <lightning-formatted-url value={con.a.Id} label={con.a.Name} onclick={openItem} target="_blank"></lightning-formatted-url></div>
                         	</th>
@@ -496,9 +496,9 @@
                 	</thead>
             	</table>
                     </template>
-            	<template if:true="{!con.adoSize > 0}">
+            	<template if:true={showConADO}>
                 ADOs
-            	<table class="slds-table slds-table--bordered slds-table--cell-buffer">
+            	<table class="slds-table slds-table--bordered slds-table--cell-buffer" key={con.Id}>
                     <thead>
                         <tr class="slds-text-title--caps">
                             <th scope="row">
@@ -531,9 +531,9 @@
                     </tbody>
                 </table>
             	</template>
-                <template if:true="{!con.dvpSize > 0}">
+                <template if:true={showConDVP}>
                 DVPs
-            	<table class="slds-table slds-table--bordered slds-table--cell-buffer">
+            	<table class="slds-table slds-table--bordered slds-table--cell-buffer" key={con.Id}>
                     <thead>
                         <tr class="slds-text-title--caps">
                             <th scope="row">
@@ -566,9 +566,9 @@
                     </tbody>
                 </table>
             	</template>
-                <template if:true="{!con.rvpSize > 0}">
+                <template if:true={showConRVP}>
                 RVPs
-            	<table class="slds-table slds-table--bordered slds-table--cell-buffer">
+            	<table class="slds-table slds-table--bordered slds-table--cell-buffer" key={con.Id}>
                     <thead>
                         <tr class="slds-text-title--caps">
                             <th scope="row">
@@ -601,9 +601,9 @@
                     </tbody>
                 </table>
             	</template>
-                <template if:true="{!con.cTeamSize > 0}">
+                <template if:true={showConCTeam}>
                 Contact Team
-                <table class="slds-table slds-table--bordered slds-table--cell-buffer">
+                <table class="slds-table slds-table--bordered slds-table--cell-buffer" key={con.Id}>
                     <thead>
                         <tr class="slds-text-title--caps">
                             <th scope="row">
@@ -621,7 +621,7 @@
                         <template for:each={con.cTeam} for:item="add">  
                                 <tr key={add.Id}>
                                     <th scope="row">
-                                        <div class="slds-truncate" title={add.Name}><lightning-formatted-url value={add.Id} label={!add.Name} target="_blank" onclick={openItem}></lightning-formatted-url></div>
+                                        <div class="slds-truncate" title={add.Name}><lightning-formatted-url value={add.Id} label={add.Name} target="_blank" onclick={openItem}></lightning-formatted-url></div>
                                     </th>
                                     
                                     <th scope="row">
@@ -636,9 +636,9 @@
                     </tbody>
                 </table>
                 </template>
-                <template if:true="{!con.conSize > 0}">
+                <template if:true={showCon}>
                 Contacts
-                <table class="slds-table slds-table--bordered slds-table--cell-buffer">
+                <table class="slds-table slds-table--bordered slds-table--cell-buffer" key={con.Id}>
                     <thead>
                         <tr class="slds-text-title--caps">
                             <th scope="row">
@@ -671,18 +671,16 @@
                     </tbody>
                 </table>
                 </template>
-                <br/>
-                <br/>
-                    
             </template>
         </template>
-        
+        <br/>
+        <br/>
         <template if:true={report4}>
             <br/>
             <br/>
             <template for:each={NPSActivityList} for:item="con">
-                <template if:true="{!con.accSize > 0}">
-            <table class="slds-table slds-table--bordered slds-table--cell-buffer">
+                <template if:true={showAcc}>
+            <table class="slds-table slds-table--bordered slds-table--cell-buffer" key={con.Id}>
                 	<thead>
                     	<tr class="slds-text-title--caps">
                         	<th scope="row">
@@ -707,9 +705,9 @@
                 	</thead>
             	</table>
                     </template>
-            	<template if:true="{!con.adoSize > 0}">
+            	<template if:true={showConADO}>
                 ADOs
-            	<table class="slds-table slds-table--bordered slds-table--cell-buffer">
+            	<table class="slds-table slds-table--bordered slds-table--cell-buffer" key={con.Id}>
                     <thead>
                         <tr class="slds-text-title--caps">
                             <th scope="row">
@@ -742,9 +740,9 @@
                     </tbody>
                 </table>
             	</template>
-                <template if:true="{!con.dvpSize > 0}">
+                <template if:true={showConDVP}>
                 DVPs
-            	<table class="slds-table slds-table--bordered slds-table--cell-buffer">
+            	<table class="slds-table slds-table--bordered slds-table--cell-buffer" key={con.Id}>
                     <thead>
                         <tr class="slds-text-title--caps">
                             <th scope="row">
@@ -777,9 +775,9 @@
                     </tbody>
                 </table>
             	</template>
-                <template if:true="{!con.rvpSize > 0}">
+                <template if:true={showConRVP}>
                 RVPs
-            	<table class="slds-table slds-table--bordered slds-table--cell-buffer">
+            	<table class="slds-table slds-table--bordered slds-table--cell-buffer" key={con.Id}>
                     <thead>
                         <tr class="slds-text-title--caps">
                             <th scope="row">
@@ -812,9 +810,9 @@
                     </tbody>
                 </table>
             	</template>
-                <template if:true="{!con.taskSize > 0}">
+                <template if:true={showConTasks}>
                 Activities
-                <table class="slds-table slds-table--bordered slds-table--cell-buffer">
+                <table class="slds-table slds-table--bordered slds-table--cell-buffer" key={con.Id}>
                     <thead>
                         <tr class="slds-text-title--caps">
                             <th scope="row">
@@ -895,7 +893,7 @@
                                     </th>
                                     
                                     <th scope="row">
-                                        <div class="slds-truncate" title={add.What.Name}><lightning-formatted-url value={add.WhatId} label={!add.What.Name} onclick={openItem} target="_blank"></lightning-formatted-url></div>
+                                        <div class="slds-truncate" title={add.What.Name}><lightning-formatted-url value={add.WhatId} label={add.What.Name} onclick={openItem} target="_blank"></lightning-formatted-url></div>
                                     </th>
                                     
                                     <th scope="row">
@@ -910,10 +908,9 @@
                     </tbody>
                 </table>
                 </template>
-                <br/>
-                <br/>
-                    
             </template>
+            <br/>
+            <br/>
         </template>
     </div>
 </template>
