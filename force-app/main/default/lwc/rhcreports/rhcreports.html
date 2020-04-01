@@ -81,7 +81,7 @@
     <div class="slds-col paddingleft paddingTop">
         <div class="slds-form-element">
             
-            <lightning-button id="reportButton" label="Go" onclick={runReport}></lightning-button>
+            <lightning-button id="reportButton" label="Go" onclick={runReports}></lightning-button>
         </div>
     </div>
     <br/>
@@ -92,16 +92,16 @@
                 <thead>
                     <tr class="slds-text-title--caps">
                         <th scope="row">
-                            <div class="slds-truncate" >Account Name: {facility.Name}</div>
+                            <div class="slds-truncate" >Account Name: <lightning-formatted-text value={facility.Name}></lightning-formatted-text></div>
                         </th>
                         <th scope="row">
-                            <div class="slds-truncate" >Product Type: {facility.PF_Product_Type__c}</div>
+                            <div class="slds-truncate" >Product Type: <lightning-formatted-text value={facility.PF_Product_Type__c}></lightning-formatted-text></div>
                         </th>
                         <th scope="row">
-                            <div class="slds-truncate" >Smart #: {facility.PF_Smart_ID__c}</div>
+                            <div class="slds-truncate" >Smart #: <lightning-formatted-text value={facility.PF_Smart_ID__c}></lightning-formatted-text></div>
                         </th>
                         <th scope="row">
-                            <div class="slds-truncate" >SAP ID: {facility.PF_SAP_ID__c}</div>
+                            <div class="slds-truncate" >SAP ID: <lightning-formatted-text value={facility.PF_SAP_ID__c}></lightning-formatted-text></div>
                         </th>
                     </tr>
                 </thead>
@@ -122,9 +122,9 @@
                             <tr>
                                 <template for:each={paginationListDVP} for:item="con">  
                                     <th scope="row" key={con.Id}>
-                                        <div class="slds-truncate" title={con.firstName}>{con.FirstName}&nbsp;{con.LastName}</div>
+                                        <div class="slds-truncate" title={con.firstName}><lightning-formatted-text value={con.FirstName}></lightning-formatted-text>&nbsp;<lightning-formatted-text value={con.LastName}></lightning-formatted-text></div>
                                     </th>
-                                </template>        
+                                </template>
                             </tr>
                         </tbody>
                     </table>
@@ -142,7 +142,7 @@
                             <tr>
                                 <template for:each={paginationListRVP} for:item="con">  
                                     <th scope="row" key={con.Id}>
-                                        <div class="slds-truncate" title={con.firstName}>{con.FirstName}&nbsp;{con.LastName}</div>
+                                        <div class="slds-truncate" title={con.firstName}><lightning-formatted-text value={con.FirstName}></lightning-formatted-text>&nbsp;<lightning-formatted-text value={con.LastName}></lightning-formatted-text></div>
                                     </th>
                                 </template>
                             </tr>
@@ -162,7 +162,7 @@
                             <tr>
                                 <template for:each={paginationListADO} for:item="con">  
                                     <th scope="row" key={con.Id}>
-                                        <div class="slds-truncate" title={con.firstName}>{con.FirstName}&nbsp;{con.LastName}</div>
+                                        <div class="slds-truncate" title={con.firstName}><lightning-formatted-text value={con.FirstName}></lightning-formatted-text>&nbsp;<lightning-formatted-text value={con.LastName}></lightning-formatted-text></div>
                                     </th>
                                 </template>
                             </tr>
@@ -233,27 +233,27 @@
                                 </th>
                                 
                                 <th scope="row">
-                                    <div class="slds-truncate" title={con.Title}>{con.Title}</div>
+                                    <div class="slds-truncate" title={con.Title}><lightning-formatted-text value={con.Title}></lightning-formatted-text></div>
                                 </th>
                                 
                                 <th scope="row">
-                                    <div class="slds-truncate" title={con.MailingStreet}>{con.MailingStreet}</div>
+                                    <div class="slds-truncate" title={con.MailingStreet}><lightning-formatted-text value={con.MailingStreet}></lightning-formatted-text></div>
                                 </th>
                                 
                                 <th scope="row">
-                                    <div class="slds-truncate" title={con.MailingCity}>{con.MailingCity}</div>
+                                    <div class="slds-truncate" title={con.MailingCity}><lightning-formatted-text value={con.MailingCity}></lightning-formatted-text></div>
                                 </th>
                                 
                                 <th scope="row">
-                                    <div class="slds-truncate" title={con.MailingState}>{con.MailingState}</div>
+                                    <div class="slds-truncate" title={con.MailingState}><lightning-formatted-text value={con.MailingState}></lightning-formatted-text></div>
                                 </th>
                                 
                                 <th scope="row">
-                                    <div class="slds-truncate" title={con.MailingPostalCode}>{con.MailingPostalCode}</div>
+                                    <div class="slds-truncate" title={con.MailingPostalCode}><lightning-formatted-text value={con.MailingPostalCode}></lightning-formatted-text></div>
                                 </th>
                                 
                                 <th scope="row">
-                                    <div class="slds-truncate" title={con.Phone}>{con.Phone}</div>
+                                    <div class="slds-truncate" title={con.Phone}><lightning-formatted-text value={con.Phone}></lightning-formatted-text></div>
                                 </th>  
                         </tr>
                     </template>

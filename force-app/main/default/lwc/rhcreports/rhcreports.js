@@ -6,7 +6,6 @@ import getADOs from '@salesforce/apex/AA_RHCReportController.getADOs';
 import getRVPs from '@salesforce/apex/AA_RHCReportController.getRVPs';
 import getDVPs from '@salesforce/apex/AA_RHCReportController.getDVPs';
 import getReportTable from '@salesforce/apex/AA_RHCReportController.getReportTable';
-import getContacts from '@salesforce/apex/AA_RHCReportController.getContacts';
 import getDVPTeams from '@salesforce/apex/AA_RHCReportController.getDVPTeams';
 import getRVPTeams from '@salesforce/apex/AA_RHCReportController.getRVPTeams';
 import getADOTeams from '@salesforce/apex/AA_RHCReportController.getADOTeams';
@@ -435,17 +434,17 @@ export default class Rhcreports extends LightningElement {
         this.disableSelectAccount();
     	}
     
-    runReport(){
+    runReports(){
         
         var report = this.selectedReport;
         
         if(report === 'Contacts Reporting'){
             this.showAlpha = false;
-            helper.getFacility(component);
-            helper.getDVPTeams(component);
-        	helper.getRVPTeams(component);
-        	helper.getADOTeams(component);
-            helper.runReport(component);
+            this.getFacility();
+            this.getDVPTeams();
+        	this.getRVPTeams();
+        	this.getADOTeams();
+            this.runReport();
             this.report1 = true;
             this.report2 = false;
         	this.report3 = false;
@@ -453,14 +452,14 @@ export default class Rhcreports extends LightningElement {
         	}
         else if(report === 'Activity Reporting'){
             this.showAlpha = false;
-            helper.getFacility(component);
+            this.getFacility();
             this.report1 = false;
             this.report2 = true;
             this.report3 = false;
             this.report4 = false;
-        	helper.getDVPActivities(component);
-            helper.getRVPActivities(component);
-            helper.getADOActivities(component);
+            this.getDVPActivities();
+            this.getRVPActivities();
+            this.getADOActivities();
         	}
         else if(report === 'NPS Activity Report'){
             this.showAlpha = false;
@@ -593,7 +592,7 @@ export default class Rhcreports extends LightningElement {
             this.report2 = false;
         	this.report3 = true;
             this.report4 = false;
-            helper.getAllRHBActive(component);
+            this.getAllRHBActive();
         	try{
             var startLetter = 'A';
             this.getAllRHBRows(startLetter);
@@ -1127,10 +1126,10 @@ export default class Rhcreports extends LightningElement {
                 var report = this.selectedReport;
         		
                 if(report === 'All Accounts Reporting'){
-        			var csv = helper.convertArrayOfObjectsToCSVAllAccount(component,stockData);
+        			var csv = this.convertArrayOfObjectsToCSVAllAccount(stockData);
                     }
                 else if(report === 'NPS Activity Report' || report.includes("PDPM")){
-                	var csv = helper.convertArrayOfObjectsToCSVNPS(component,stockData);
+                	var csv = this.convertArrayOfObjectsToCSVNPS(stockData);
                 	}
         	if(csv == null){
             	return;
@@ -1199,6 +1198,9 @@ export default class Rhcreports extends LightningElement {
                                         }
                                     this.paginationListDVPAct = paginationList;
                                     this.dvpListAct = result;
+                                    if(this.paginationListDVPAct.length > 0){
+                                        this.showPageListDVPAct = true;
+                                        }
                                     }
                                 )
                             .catch(
@@ -1252,6 +1254,9 @@ export default class Rhcreports extends LightningElement {
                                     }
                                 this.paginationListRVPAct = paginationList;
                                 this.rvpListAct = response;
+                                if(this.paginationListRVPAct.length > 0){
+                                    this.showPageListRVPAct = true;
+                                    }
                                 }
                             )
                         .catch(
@@ -1304,6 +1309,9 @@ export default class Rhcreports extends LightningElement {
                                     }
                                 this.paginationListADOAct = paginationList;
                                 this.adoListAct = result;
+                                if(this.paginationListADOAct.length > 0){
+                                    this.showPageListADOAct = true;
+                                    }
                                 }
                             )
                         .catch(
@@ -1321,6 +1329,7 @@ export default class Rhcreports extends LightningElement {
                         .then(
                             result=>{
                                 this.facility = result;
+                                this.showFacility = true;
                             }
                         )
                         .catch(
@@ -1549,6 +1558,13 @@ export default class Rhcreports extends LightningElement {
                         result=>{
                             var repList = result;
                             this.accountTeamAndADO = repList;
+                            if(this.accountTeamAndADO.length > 0){
+                                this.showCon = true;
+                                this.showConADO = true;
+                                this.showConDVP = true;
+                                this.showConRVP = true;
+                                this.showConCTeam = true;
+                                }
                             this.Spinner = false;
                             }
                         )
@@ -1578,6 +1594,13 @@ export default class Rhcreports extends LightningElement {
                                 result=>{
                                     var repList = result;
                                     this.NPSActivityList = repList;
+                                    if(this.NPSActivityList.length > 0){
+                                        this.showAcc = true;
+                                        this.showConTasks = true;
+                                        this.showConADO = true;
+                                        this.showConDVP = true;
+                                        this.showConRVP = true;
+                                        }
                                     this.Spinner = false;
                                     }
                             )
