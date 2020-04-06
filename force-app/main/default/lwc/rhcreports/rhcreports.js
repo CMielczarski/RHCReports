@@ -1,4 +1,4 @@
-import { LightningElement, api } from 'lwc';
+import { LightningElement, api} from 'lwc';
 
 import getReportNames from '@salesforce/apex/AA_RHCReportController.getReportNames';
 import getAccounts from '@salesforce/apex/AA_RHCReportController.getAccounts';
@@ -40,11 +40,11 @@ export default class Rhcreports extends LightningElement {
     @api report3 = false;
     @api report4 = false;
     @api dvpListAct = [];
-    @api paginationListDVPAct;
+    @api paginationListDVPAct = [];
     @api rvpListAct = [];
-    @api paginationListRVPAct;
+    @api paginationListRVPAct = [];
     @api adoListAct = [];
-    @api paginationListADOAct;
+    @api paginationListADOAct = [];
     @api letterStart;
     @api letterEnd;
     @api adoListChoose = [];
@@ -79,6 +79,7 @@ export default class Rhcreports extends LightningElement {
     @api xList = [];
     @api yList = [];
     @api zList = [];
+    @api objectRecords = [];
     @api processingFinished = false;
     
     @api accountTeamAndADO = [];
@@ -126,8 +127,17 @@ export default class Rhcreports extends LightningElement {
     @api accSelectDisabled = false;
     @api selectedReport;
     @api selectedAccount;
+    @api showPaginationList = false;
+    @api showPaginationListADO = false;
+    @api showPaginationListDVP = false;
+    @api showPaginationListRVP = false;
+
+    @api nextButtonDisabled = false;
+    @api prevButtonDisabled = false;
 
     connectedCallback(){
+        this.nextButtonDisabled = true;
+        this.prevButtonDisabled = true;
         this.accSelectDisabled = true;
         this.Spinner = true;
         getReportNames().then(
@@ -157,10 +167,10 @@ export default class Rhcreports extends LightningElement {
                                         getDVPs().then(
                                             result=>{
                                                 var stringItems = result;
-                                            var options = [];
-                                            for(var i = 0; i < stringItems.length; i++){ 
-                                                options.push({ value: stringItems[i], label: stringItems[i]});
-                                                }
+                                                var options = [];
+                                                for(var i = 0; i < stringItems.length; i++){ 
+                                                    options.push({ value: stringItems[i], label: stringItems[i]});
+                                                    }
                                                 this.dvpListChoose = options;
                                                 this.Spinner = false;
                                                 }
@@ -215,49 +225,42 @@ export default class Rhcreports extends LightningElement {
 
     handleADOChange(event){
         var selectedOptionsList = event.target.value;
-        console.log('ADOs: ' + selectedOptionsList);
         this.selectedADO = selectedOptionsList;
     	}
     
     handleRVPChange(event){
         var selectedOptionsList = event.target.value;
-        console.log('RVPs: ' + selectedOptionsList);
         this.selectedRVP = selectedOptionsList;
     	}
     
     handleDVPChange(event){
         var selectedOptionsList = event.target.value;
-        console.log('DVPs: ' + selectedOptionsList);
         this.selectedDVP = selectedOptionsList;
     	}
     
     onReportChange(event){
         var report = event.target.value;
+        this.accSelectDisabled = true;
         console.log('Selected Report: ' + report);
         this.selectedReport = report;
+        this.showAlpha = false;
+        this.report1 = false;
+        this.report2 = false;
+        this.report3 = false;
+        this.report4 = false;
+        this.showExtraFilters = false;
+        this.showFacility = false;
         if(report === 'Contacts Reporting'){
-            this.showAlpha = false;
             this.report1 = true;
-            this.report2 = false;
-        	this.report3 = false;
-            this.report4 = false;
-            this.showExtraFilters = false;
-        	}
+            this.accSelectDisabled = false;
+            }
         else if(report === 'Activity Reporting'){
-            this.showAlpha = false;
-            this.report1 = false;
             this.report2 = true;
-            this.report3 = false;
-            this.report4 = false;
-            this.showExtraFilters = false;
-        	}
+            this.accSelectDisabled = false;
+            }
         else if(report === 'NPS Activity Report'){
             this.showExtraFilters = true;
-            this.showAlpha = false;
             this.showAlpha = true;
-            this.report1 = false;
-            this.report2 = false;
-            this.report3 = false;
             this.report4 = true;
             this.getAllNPSPDPMActive();
             try{
@@ -314,11 +317,7 @@ export default class Rhcreports extends LightningElement {
                 }
         	}
         else if(report.includes("PDPM")){
-            this.showAlpha = false;
             this.showAlpha = true;
-            this.report1 = false;
-            this.report2 = false;
-            this.report3 = false;
             this.report4 = true;
             this.getAllNPSPDPMActive();
             this.showExtraFilters = true;
@@ -371,12 +370,8 @@ export default class Rhcreports extends LightningElement {
             this.getAllNPSPDPMRows(startLetter);
         	}
         else if(report === 'All Accounts Reporting'){
-            this.showAlpha = false;
             this.showAlpha = true;
-            this.report1 = false;
-            this.report2 = false;
-        	this.report3 = true;
-            this.report4 = false;
+            this.report3 = true;
             this.showExtraFilters = true;
             try{
             var startLetter = 'A';
@@ -430,43 +425,36 @@ export default class Rhcreports extends LightningElement {
                 console.log('Error getting AllRHBRows: ' + err.message);
                 this.Spinner = false;
                 }
-            }   
-        this.disableSelectAccount();
-    	}
+            }
+
+        }
     
     runReports(){
-        
         var report = this.selectedReport;
-        
+        console.log('Selected Report: ' + this.selectedReport);
+        this.showAlpha = false;
+        this.showExtraFilters = false;
+        this.report1 = false;
+        this.report2 = false;
+        this.report3 = false;
+        this.report4 = false;
         if(report === 'Contacts Reporting'){
-            this.showAlpha = false;
             this.getFacility();
             this.getDVPTeams();
         	this.getRVPTeams();
         	this.getADOTeams();
-            this.runReport();
+            this.runAccountReport();
             this.report1 = true;
-            this.report2 = false;
-        	this.report3 = false;
-        	this.report4 = false;
-        	}
+            }
         else if(report === 'Activity Reporting'){
-            this.showAlpha = false;
             this.getFacility();
-            this.report1 = false;
             this.report2 = true;
-            this.report3 = false;
-            this.report4 = false;
             this.getDVPActivities();
             this.getRVPActivities();
             this.getADOActivities();
         	}
         else if(report === 'NPS Activity Report'){
-            this.showAlpha = false;
             this.showAlpha = true;
-            this.report1 = false;
-            this.report2 = false;
-            this.report3 = false;
             this.report4 = true;
             this.showExtraFilters = true;
             this.getAllNPSPDPMActive();
@@ -524,11 +512,7 @@ export default class Rhcreports extends LightningElement {
                 }
         	}
         else if(report.includes("PDPM")){
-            this.showAlpha = false;
             this.showAlpha = true;
-            this.report1 = false;
-            this.report2 = false;
-            this.report3 = false;
             this.report4 = true;
             this.getAllNPSPDPMActive();
             this.showExtraFilters = true;
@@ -586,13 +570,9 @@ export default class Rhcreports extends LightningElement {
                 }
         	}
         else if(report === 'All Accounts Reporting'){
-            this.showAlpha = false;
             this.showAlpha = true;
-            this.report1 = false;
-            this.report2 = false;
-        	this.report3 = true;
-            this.report4 = false;
-            this.getAllRHBActive();
+            this.report3 = true;
+            this.getAllRHBAct();
         	try{
             var startLetter = 'A';
             this.getAllRHBRows(startLetter);
@@ -834,7 +814,7 @@ export default class Rhcreports extends LightningElement {
         this.letterEnd = "q";
         var report = this.selectedReport;
         if(report === 'All Accounts Reporting'){
-        	this.getAllRHBAct();               
+        	this.getAllRHBAct();
         	}
         else if(report === 'NPS Activity Report' || report.includes("PDPM")){
             this.getAllNPSPDPMActive();
@@ -963,6 +943,7 @@ export default class Rhcreports extends LightningElement {
     
     downloadCsvAllAccount(){
             var stockData = [];
+            this.objectRecords = [];
             var ready = this.processingFinished;
             if(ready === true){
                 this.Spinner = true;
@@ -993,166 +974,168 @@ export default class Rhcreports extends LightningElement {
                 var y = this.yList;
                 var z = this.zList;
             
-                if(a != null){
+                if(a !== undefined){
             for(var aa=0; aa< a.length; aa++){
                  	stockData.push(a[aa]);    
-    				}
-                }
-                if(b != null){
+                    }
+                    }
+                if(b !== undefined){
             for(var bb=0; bb< b.length; bb++){
-                 	stockData.push(b[bb]);    
-    				}
+                    stockData.push(b[bb]);
+                    }
                 }
-                if(c != null){
+                if(c !== undefined){
                 for(var cc=0; cc< c.length; cc++){
-                 	stockData.push(c[cc]);    
-    				}
+                    stockData.push(c[cc]);
+                    }
                 }
-                if(d != null){
+                if(d !== undefined){
                 for(var dd=0; dd< d.length; dd++){
-                 	stockData.push(d[dd]);    
-    				}
+                    stockData.push(d[dd]);
+                    }
                 }
-                if(e != null){
+                if(e !== undefined){
                 for(var ee=0; ee< e.length; ee++){
-                 	stockData.push(e[ee]);    
-    				}
+                    stockData.push(e[ee]);
+                    }
                 }
-                if(f != null){
+                if(f !== undefined){
                 for(var ff=0; ff< f.length; ff++){
-                 	stockData.push(f[ff]);    
-    				}
+                    stockData.push(f[ff]);
+                    }
                 }
-                if(g != null){
+                if(g !== undefined){
                 for(var gg=0; gg< g.length; gg++){
-                 	stockData.push(g[gg]);    
-    				}
+                    stockData.push(g[gg]);    
+                    }
                 }
-                if(h != null){
+                if(h !== undefined){
                 for(var hh=0; hh< h.length; hh++){
-                 	stockData.push(h[hh]);    
-    				}
+                    stockData.push(h[hh]);
+                    }
                 }
-                if(i != null){
+                if(i !== undefined){
                 for(var ii=0; ii< i.length; ii++){
-                 	stockData.push(i[ii]);    
-    				}
+                    stockData.push(i[ii]);
+                    }
                 }
-                if(j != null){
+                if(j !== undefined){
                 for(var jj=0; jj< j.length; jj++){
-                 	stockData.push(j[jj]);    
-    				}
+                    stockData.push(j[jj]);
+                    }
                 }
-                if(k != null){
+                if(k !== undefined){
                 for(var kk=0; kk< k.length; kk++){
-                 	stockData.push(k[kk]);    
-    				}
+                    stockData.push(k[kk]);
+                    }
                 }
-                if(l != null){
+                if(l !== undefined){
                 for(var ll=0; ll< l.length; ll++){
-                 	stockData.push(l[ll]);    
-    				}
+                    stockData.push(l[ll]);
+                    }
                 }
-                if(m != null){
+                if(m !== undefined){
                 for(var mm=0; mm< m.length; mm++){
-                 	stockData.push(m[mm]);    
-    				}
+                    stockData.push(m[mm]);
+                    }
                 }
-                if(n != null){
+                if(n !== undefined){
                 for(var nn=0; nn< n.length; nn++){
-                 	stockData.push(n[nn]);    
-    				}
+                    stockData.push(n[nn]);
+                    }
                 }
-                if(o != null){
+                if(o !== undefined){
                 for(var oo=0; oo< o.length; oo++){
-                 	stockData.push(o[oo]);    
-    				}
+                    stockData.push(o[oo]);
+                    }
                 }
-                if(p != null){
+                if(p !== undefined){
                 for(var pp=0; pp< p.length; pp++){
-                 	stockData.push(p[pp]);    
-    				}
+                    stockData.push(p[pp]);
+                    }
                 }
-                if(q != null){
+                if(q !== undefined){
                 for(var qq=0; qq< q.length; qq++){
-                 	stockData.push(q[qq]);    
-    				}
+                    stockData.push(q[qq]);
+                    }
                 }
-                if(r != null){
+                if(r !== undefined){
                 for(var rr=0; rr< r.length; rr++){
-                 	stockData.push(r[rr]);    
-    				}
+                    stockData.push(r[rr]);
+                    }
                 }
-                if(s != null){
+                if(s !== undefined){
                 for(var ss=0; ss< s.length; ss++){
-                 	stockData.push(s[ss]);    
-    				}
+                    stockData.push(s[ss]);
+                    }
                 }
-                if(t != null){
+                if(t !== undefined){
                 for(var tt=0; tt< t.length; tt++){
-                 	stockData.push(t[tt]);    
-    				}
+                    stockData.push(t[tt]);
+                    }
                 }
-                if(u != null){
+                if(u !== undefined){
                 for(var uu=0; uu< u.length; uu++){
-                 	stockData.push(u[uu]);    
-    				}
+                    stockData.push(u[uu]);
+                    }
                 }
-                if(v != null){
+                if(v !== undefined){
                 for(var vv=0; vv< v.length; vv++){
-                 	stockData.push(v[vv]);    
-    				}
+                    stockData.push(v[vv]);
+                    }
                 }
-                if(w != null){
+                if(w !== undefined){
                 for(var ww=0; ww< w.length; ww++){
-                 	stockData.push(w[ww]);    
-    				}
+                    stockData.push(w[ww]);
+                    }
                 }
-                if(x != null){
+                if(x !== undefined){
                 for(var xx=0; xx< x.length; xx++){
-                 	stockData.push(x[xx]);    
-    				}
+                    stockData.push(x[xx]);
+                    }
                 }
-                if(y != null){
+                if(y !== undefined){
                 for(var yy=0; yy< y.length; yy++){
-                 	stockData.push(y[yy]);    
-    				}
+                    stockData.push(y[yy]);
+                    }
                 }
-                if(z != null){
+                if(z !== undefined){
                 for(var zz=0; zz< z.length; zz++){
-                 	stockData.push(z[zz]);    
-    				}
+                    stockData.push(z[zz]);
+                    }
                 }
                 var report = this.selectedReport;
-        		
+                this.objectRecords = stockData;
+                var csv;
+                
                 if(report === 'All Accounts Reporting'){
-        			var csv = this.convertArrayOfObjectsToCSVAllAccount(stockData);
+                    csv = this.convertArrayOfObjectsToCSVAllAccount();
                     }
                 else if(report === 'NPS Activity Report' || report.includes("PDPM")){
-                	var csv = this.convertArrayOfObjectsToCSVNPS(stockData);
-                	}
-        	if(csv == null){
-            	return;
-        		}
-        	else{
+                    csv = this.convertArrayOfObjectsToCSVNPS();
+                    }
+            if(csv == null || csv == undefined){
+                return;
+                }
+            else{
                 if(navigator.msSaveBlob){ // IE 10+ 
-				   navigator.msSaveBlob(new Blob([csv], { type: 'text/csv;charset=utf-8;' }), "AccountTeamData.csv"); 
+                   navigator.msSaveBlob(new Blob([csv], { type: 'text/csv;charset=utf-8;' }), "AccountTeamData.csv"); 
                    }
                 else{
-        			var hiddenElement = document.createElement('a');
-          			hiddenElement.href = 'data:text/csv;charset=utf-8,' + encodeURI(csv);
-         			hiddenElement.target = '_self'; // 
-          			hiddenElement.download = 'AccountTeamData.csv';
-          			document.body.appendChild(hiddenElement);
-    	  			hiddenElement.click();
-                	}
+                    var hiddenElement = document.createElement('a');
+                    hiddenElement.href = 'data:text/csv;charset=utf-8,' + encodeURI(csv);
+                    hiddenElement.target = '_self'; // 
+                    hiddenElement.download = 'AccountTeamData.csv';
+                    document.body.appendChild(hiddenElement);
+                    hiddenElement.click();
+                    }
                 this.Spinner = false;
-        		}
+                }
             }
             else{
                 this.Spinner = false;
-            	alert("Data Compliation of the report is not yet complete.  Please wait a few moments and then try your request again.");
-        		}
+                alert("Data Compliation of the report is not yet complete.  Please wait a few moments and then try your request again.");
+                }
         }
 
         getDVPTeams(){
@@ -1164,12 +1147,22 @@ export default class Rhcreports extends LightningElement {
                         }).then(
                             result=>{
                                 var paginationList = [];
-                                this.start = 0;
-                                this.end = pageSize-1;
-                                for(var i=0; i< pageSize; i++){
-                                    paginationList.push(result[i]);    
-                                    }
+                                    this.start = 0;
+                                    this.end = pageSize-1;
+                                    var loopSize;
+                                    if(result.length > pageSize){
+                                        loopSize = pageSize;
+                                        }
+                                    else{
+                                        loopSize = result.length;
+                                        }
+                                    for(var i=0; i< loopSize; i++){
+                                        paginationList.push(result[i]);
+                                        }
                                 this.paginationListDVP = paginationList;
+                                if(this.paginationListDVP.length > 0){
+                                    this.showPaginationListDVP = true;
+                                    }
                                 this.dvpList = result;
                                 }
                             )
@@ -1182,8 +1175,6 @@ export default class Rhcreports extends LightningElement {
             }
         
         getDVPActivities(){
-            this.dvpListAct = null;
-            this.paginationListDVPAct = null;
             var pageSize = this.pageSize2;
             getDVPActivities({
                                 "accName" : this.selectedAccount
@@ -1193,8 +1184,15 @@ export default class Rhcreports extends LightningElement {
                                     var paginationList = [];
                                     this.start = 0;
                                     this.end = pageSize-1;
-                                    for(var i=0; i< pageSize; i++){
-                                        paginationList.push(result[i]);    
+                                    var loopSize;
+                                    if(result.length > pageSize){
+                                        loopSize = pageSize;
+                                        }
+                                    else{
+                                        loopSize = result.length;
+                                        }
+                                    for(var i=0; i< loopSize; i++){
+                                        paginationList.push(result[i]);
                                         }
                                     this.paginationListDVPAct = paginationList;
                                     this.dvpListAct = result;
@@ -1220,12 +1218,22 @@ export default class Rhcreports extends LightningElement {
                         }).then(
                             result=>{
                                 var paginationList = [];
-                                this.start = 0;
-                                this.end = pageSize-1;
-                                for(var i=0; i< pageSize; i++){
-                                    paginationList.push(result[i]);    
-                                    }
+                                    this.start = 0;
+                                    this.end = pageSize-1;
+                                    var loopSize;
+                                    if(result.length > pageSize){
+                                        loopSize = pageSize;
+                                        }
+                                    else{
+                                        loopSize = result.length;
+                                        }
+                                    for(var i=0; i< loopSize; i++){
+                                        paginationList.push(result[i]);
+                                        }
                                 this.paginationListRVP =  paginationList;
+                                if(this.paginationListRVP.length > 0){
+                                    this.showPaginationListRVP = true;
+                                    }
                                 this.rvpList = result;
                                 }
                         )
@@ -1247,13 +1255,20 @@ export default class Rhcreports extends LightningElement {
                         .then(
                             result=>{
                                 var paginationList = [];
-                                this.start = 0;
-                                this.end = pageSize-1;
-                                for(var i=0; i< pageSize; i++){
-                                    paginationList.push(response[i]);    
-                                    }
+                                    this.start = 0;
+                                    this.end = pageSize-1;
+                                    var loopSize;
+                                    if(result.length > pageSize){
+                                        loopSize = pageSize;
+                                        }
+                                    else{
+                                        loopSize = result.length;
+                                        }
+                                    for(var i=0; i< loopSize; i++){
+                                        paginationList.push(result[i]);
+                                        }
                                 this.paginationListRVPAct = paginationList;
-                                this.rvpListAct = response;
+                                this.rvpListAct = result;
                                 if(this.paginationListRVPAct.length > 0){
                                     this.showPageListRVPAct = true;
                                     }
@@ -1276,12 +1291,22 @@ export default class Rhcreports extends LightningElement {
                 }).then(
                     result=>{
                         var paginationList = [];
-                    this.start = 0;
-                    this.end = pageSize-1;
-                    for(var i=0; i< pageSize; i++){
-                         paginationList.push(result[i]);    
-                        }
+                                    this.start = 0;
+                                    this.end = pageSize-1;
+                                    var loopSize;
+                                    if(result.length > pageSize){
+                                        loopSize = pageSize;
+                                        }
+                                    else{
+                                        loopSize = result.length;
+                                        }
+                                    for(var i=0; i< loopSize; i++){
+                                        paginationList.push(result[i]);
+                                        }
                     this.paginationListADO = paginationList;
+                    if(this.paginationListADO.length > 0){
+                        this.showPaginationListADO = true;
+                        }
                     this.adoList = result;
                     }
                 ).catch(
@@ -1304,9 +1329,16 @@ export default class Rhcreports extends LightningElement {
                                     var paginationList = [];
                                     this.start = 0;
                                     this.end = pageSize-1;
-                                for(var i=0; i< pageSize; i++){
-                                    paginationList.push(result[i]);    
-                                    }
+                                    var loopSize;
+                                    if(result.length > pageSize){
+                                        loopSize = pageSize;
+                                        }
+                                    else{
+                                        loopSize = result.length;
+                                        }
+                                    for(var i=0; i< loopSize; i++){
+                                        paginationList.push(result[i]);
+                                        }
                                 this.paginationListADOAct = paginationList;
                                 this.adoListAct = result;
                                 if(this.paginationListADOAct.length > 0){
@@ -1340,16 +1372,7 @@ export default class Rhcreports extends LightningElement {
                         );
             }
         
-        disableSelectAccount(){
-            if(this.selectedReport == 'Contacts Reporting' || this.selectedReport == 'Activity Reporting'){
-                this.accSelectDisabled = false; 
-                }
-            else{
-                this.accSelectDisabled =  true;
-                }
-            }
-        
-        runReport(){
+        runAccountReport(){
             this.Spinner = true;
             this.tableData = null;
             this.paginationList = null;
@@ -1363,10 +1386,22 @@ export default class Rhcreports extends LightningElement {
                             var paginationList = [];
                             this.start = 0;
                             this.end = pageSize-1;
-                            for(var i=0; i< pageSize; i++){
-                                paginationList.push(result[i]);    
+                            var loopSize;
+                            if(result.length > pageSize){
+                                loopSize = pageSize;
+                                this.nextButtonDisabled = false;
+                                this.prevButtonDisabled = false;
+                                }
+                            else{
+                                loopSize = result.length;
+                                }
+                            for(var i=0; i< loopSize; i++){
+                                paginationList.push(result[i]);
                                 }
                             this.paginationList = paginationList;
+                            if(this.paginationList.length > 0){
+                                this.showPaginationList = true;
+                                }
                             this.tableData = result;
                             this.Spinner = false;
                         }
@@ -1379,170 +1414,8 @@ export default class Rhcreports extends LightningElement {
                     );
             }
         
-        next(){
-            var accountList = this.tableData;
-            var end = component.get("v.end");
-            var start = component.get("v.start");
-            var pageSize = component.get("v.pageSize");
-            var paginationList = [];
+
             
-            var counter = 0;
-            for(var i=end+1; i<end+pageSize+1; i++){
-             if(accountList.length > end){
-                 paginationList.push(accountList[i]);
-                counter ++ ;
-                 }
-                }
-            start = start + counter;
-            end = end + counter;
-            
-            this.start = start;
-            this.end = end;
-            
-            this.paginationList = paginationList;
-            }
-        
-        previous(){
-             var accountList = this.tableData;
-            var end = component.get("v.end");
-            var start = component.get("v.start");
-            var pageSize = component.get("v.pageSize");
-            var paginationList = [];
-             
-            var counter = 0;
-            for(var i= start-pageSize; i < start ; i++){
-                if(i > -1){
-                    paginationList.push(accountList[i]);
-                    counter ++;
-                     }
-                else{
-                    start++;
-                    }
-                }
-            start = start - counter;
-            end = end - counter;
-            
-            this.start = start;
-            this.end  = end;
-            
-            this.paginationList = paginationList;
-            }
-        
-        sortByContact(component, field){
-            pageSize = this.pageSize;	
-            var sortAsc = this.sortAscContact,
-            sortField = this.sortFieldContact,
-            records = this.tableData;
-                sortAsc = sortField != field || !sortAsc;
-                records.sort(function(a,b){
-                var t1 = a[field] == b[field],
-                    t2 = (!a[field] && b[field]) || (a[field] < b[field]);
-                return t1? 0: (sortAsc?-1:1)*(t2?1:-1);
-                });
-            this.sortAscContact = sortAsc;
-            this.sortFieldContact = field;
-            this.tableData = records;
-            var end = this.end;
-            var start = this.start;
-            var pageSize = this.pageSize;
-            var paginationList = [];
-             
-            var paginationList = [];
-                    this.start = 0;
-                    this.end = pageSize-1;
-                    for(var i=0; i< pageSize; i++){
-                         paginationList.push(records[i]);    
-                        }
-                    this.paginationList = paginationList;
-                    this.tableData = records;
-            }
-        
-        sortByDVP(component, field){
-            pageSize = this.pageSize;	
-            var sortAsc = this.sortAscDVP,
-            sortField = this.sortField,
-            records = this.dvpListAct;
-                sortAsc = sortField != field || !sortAsc;
-                records.sort(function(a,b){
-                var t1 = a[field] == b[field],
-                    t2 = (!a[field] && b[field]) || (a[field] < b[field]);
-                return t1? 0: (sortAsc?-1:1)*(t2?1:-1);
-                });
-            this.sortAscDVP = sortAsc;
-            this.sortFieldDVP = field;
-            this.dvpListAct = records;
-            var end = this.end;
-            var start = this.start;
-            var pageSize = this.pageSize2;
-            var paginationList = [];
-             
-            var paginationList = [];
-                    this.start = 0;
-                    this.end = pageSize-1;
-                    for(var i=0; i< pageSize; i++){
-                         paginationList.push(records[i]);    
-                        }
-                    this.paginationListDVPAct = paginationList;
-                    this.dvpListAct = records;
-            }
-        
-        sortByRVP(component, field){
-            pageSize = this.pageSize2;	
-            var sortAsc = this.sortAscRVP,
-            sortField = this.sortFieldRVP,
-            records = this.rvpListAct;
-                sortAsc = sortField != field || !sortAsc;
-                records.sort(function(a,b){
-                var t1 = a[field] == b[field],
-                    t2 = (!a[field] && b[field]) || (a[field] < b[field]);
-                return t1? 0: (sortAsc?-1:1)*(t2?1:-1);
-                });
-            this.sortAscRVP = sortAsc;
-            this.sortFieldRVP = field;
-            this.rvpListAct = records;
-            var end = this.end;
-            var start = this.start;
-            var pageSize = this.pageSize2;
-            var paginationList = [];
-             
-            var paginationList = [];
-                    this.start = 0;
-                    this.end = pageSize-1;
-                    for(var i=0; i< pageSize; i++){
-                         paginationList.push(records[i]);    
-                        }
-                    this.paginationListRVPAct = paginationList;
-                    this.rvpListAct = records;
-            }
-        
-        sortByADO(component, field){
-            pageSize = this.pageSize2;	
-            var sortAsc = this.sortAscADO,
-            sortField = this.sortFieldADO,
-            records = this.adoListAct;
-                sortAsc = sortField != field || !sortAsc;
-                records.sort(function(a,b){
-                var t1 = a[field] == b[field],
-                    t2 = (!a[field] && b[field]) || (a[field] < b[field]);
-                return t1? 0: (sortAsc?-1:1)*(t2?1:-1);
-                });
-            this.sortAscADO = sortAsc;
-            this.sortFieldADO = field;
-            this.adoListAct = records;
-            var end = this.end;
-            var start = this.start;
-            var pageSize = this.pageSize2;
-            var paginationList = [];
-             
-            var paginationList = [];
-                    this.start = 0;
-                    this.end = pageSize-1;
-                    for(var i=0; i< pageSize; i++){
-                         paginationList.push(records[i]);    
-                        }
-                    this.paginationListADOAct = paginationList;
-                    this.adoListAct = records;
-            }
         
         getAllRHBAct(){
             this.Spinner = true;
@@ -1594,12 +1467,9 @@ export default class Rhcreports extends LightningElement {
                                 result=>{
                                     var repList = result;
                                     this.NPSActivityList = repList;
+                                    this.report4 = true;
                                     if(this.NPSActivityList.length > 0){
-                                        this.showAcc = true;
-                                        this.showConTasks = true;
-                                        this.showConADO = true;
-                                        this.showConDVP = true;
-                                        this.showConRVP = true;
+                                        this.showNPSActivityList = true;
                                         }
                                     this.Spinner = false;
                                     }
@@ -1624,7 +1494,11 @@ export default class Rhcreports extends LightningElement {
                     .then(
                         result=>{
                             var repList = result;
+                            this.report4 = true;
                             this.NPSActivityList = repList;
+                            if(this.NPSActivityList.length > 0){
+                                this.showNPSActivityList = true;
+                                }
                             this.Spinner = false;
                             }
                     )
@@ -1637,34 +1511,29 @@ export default class Rhcreports extends LightningElement {
                 }
             }
         
-        convertArrayOfObjectsToCSVAllAccount(objectRecords){
-            // declare variables
+        convertArrayOfObjectsToCSVAllAccount(){
+            var objectRecords = this.objectRecords;
             var csvStringResult, counter, keys, columnDivider, lineDivider;
-            console.log('objectRecords Processing: ' + objectRecords);
-            // check if "objectRecords" parameter is null, then return from function
             if (objectRecords == null || !objectRecords.length){
                 console.log('Why is this broken?');
+                this.Spinner = false;
                 return null;
                  }
-            // store ,[comma] in columnDivider variabel for sparate CSV values and 
-            // for start next line use '\n' [new line] in lineDivider varaible  
             columnDivider = ',';
             lineDivider =  '\n';
-     
-            // in the keys valirable store fields API Names as a key 
-            // this labels use in CSV file header  
             keys = ['Name','Title','Email', 'Account', 'Product Type', 'Start Date', 'Last Date of Service', 'SAP', 'SMART'];
             
             csvStringResult = '';
             csvStringResult += keys.join(columnDivider);
             csvStringResult += lineDivider;
+            try{
+                if(objectRecords !== undefined){
              for(var i=0; i < objectRecords.length; i++){
                 counter = 0;
                 if(objectRecords[i].ados !== undefined){
                 for(var x = 0; x < objectRecords[i].ados.length; x++){
                     for(var sTempkey in keys){
-                    var skey = keys[sTempkey] ;  
-                  // add , [comma] after every String value,. [except first]
+                    var skey = keys[sTempkey];  
                       if(counter > 0){ 
                           csvStringResult += columnDivider; 
                        }  
@@ -1751,8 +1620,8 @@ export default class Rhcreports extends LightningElement {
                 if(objectRecords[i].dvps !== undefined){
                 for(var x = 0; x < objectRecords[i].dvps.length; x++){
                     for(var sTempkey in keys){
-                    var skey = keys[sTempkey] ;  
-                  // add , [comma] after every String value,. [except first]
+                    var skey = keys[sTempkey] ;
+                    console.log('sKey DVPs: ' + skey);   
                       if(counter > 0){ 
                           csvStringResult += columnDivider; 
                        }  
@@ -1839,8 +1708,8 @@ export default class Rhcreports extends LightningElement {
                 if(objectRecords[i].rvps !== undefined){
                 for(var x = 0; x < objectRecords[i].rvps.length; x++){
                     for(var sTempkey in keys){
-                    var skey = keys[sTempkey] ;  
-                  // add , [comma] after every String value,. [except first]
+                    var skey = keys[sTempkey] ;
+                    console.log('sKey RVPs: ' + skey);   
                       if(counter > 0){ 
                           csvStringResult += columnDivider; 
                        }  
@@ -1927,8 +1796,8 @@ export default class Rhcreports extends LightningElement {
                 if(objectRecords[i].cTeam !== undefined){
                 for(var x = 0; x < objectRecords[i].cTeam.length; x++){
                     for(var sTempkey in keys){
-                    var skey = keys[sTempkey] ;  
-                  // add , [comma] after every String value,. [except first]
+                    var skey = keys[sTempkey] ;
+                    console.log('sKey CTeams: ' + skey);   
                       if(counter > 0){ 
                           csvStringResult += columnDivider; 
                        }  
@@ -2015,8 +1884,7 @@ export default class Rhcreports extends LightningElement {
                 if(objectRecords[i].cons !== undefined){
                 for(var x = 0; x < objectRecords[i].cons.length; x++){
                     for(var sTempkey in keys){
-                    var skey = keys[sTempkey] ;  
-                  // add , [comma] after every String value,. [except first]
+                    var skey = keys[sTempkey] ;
                       if(counter > 0){ 
                           csvStringResult += columnDivider; 
                        }  
@@ -2100,149 +1968,135 @@ export default class Rhcreports extends LightningElement {
                     csvStringResult += lineDivider;
                     }
                     }
-               }// outer main for loop close 
-               // return the CSV formate String 
-            return csvStringResult;        
+               }
+                }
+            else{
+                console.log('objectRecords undefined.');
+                this.Spinner = false;
+                }
+            }
+            catch(err){
+                console.log('Error with export: ' + err.message);
+                this.Spinner = false;
+            }
+            return csvStringResult;
             }
         
         getAllRHBRows(startLetter){
             var start;
             var end;
             if(startLetter === 'A'){
-                console.log('A');
                 this.processingFinished = false;
                 start = 'a';
                 end = 'b';
                 this.aList = null;
                 }
             else if(startLetter === 'B'){
-                console.log('B');
                 start = 'b';
                 end = 'c';
                 this.bList = null;
                 }
             else if(startLetter === 'C'){
-                console.log('C');
                 start = 'c';
                 end = 'd';
                 this.cList = null;
                 }
             else if(startLetter === 'D'){
-                console.log('D');
                 start = 'd';
                 end = 'e';
                 this.dList = null;
                 }
             else if(startLetter === 'E'){
-                console.log('E');
                 start = 'e';
                 end = 'f';
                 this.eList = null;
                 }
             else if(startLetter === 'F'){
-                console.log('F');
                 start = 'f';
                 end = 'g';
                 this.fList = null;
                 }
             else if(startLetter === 'G'){
-                console.log('G');
                 start = 'g';
                 end = 'h';
                 this.gList = null;
                 }
             else if(startLetter === 'H'){
-                console.log('H');
                 start = 'h';
                 end = 'i';
                 this.hList = null;
                 }
             else if(startLetter === 'I'){
-                console.log('I');
                 start = 'i';
                 end = 'j';
                 this.iList = null;
                 }
             else if(startLetter === 'J'){
-                console.log('J');
                 start = 'j';
                 end = 'k';
                 this.jList = null;
                 }
             else if(startLetter === 'K'){
-                console.log('K');
                 start = 'k';
                 end = 'l';
                 this.kList = null;
                 }
             else if(startLetter === 'L'){
-                console.log('L');
                 start = 'l';
                 end = 'm';
                 this.lList  = null;
                 }
             else if(startLetter === 'M'){
-                console.log('M');
                 start = 'm';
                 end = 'n';
                 this.mList = null;
                 }
             else if(startLetter === 'N'){
-                console.log('N');
                 start = 'n';
                 end = 'o';
                 this.nList = null;
                 }
             else if(startLetter === 'O'){
-                console.log('O');
                 start = 'o';
                 end = 'p';
                 this.oList = null;
                 }
             else if(startLetter === 'P'){
-                console.log('P');
                 start = 'p';
                 end = 'q';
                 this.pList = null;
                 }
             else if(startLetter === 'Q'){
-                console.log('Q');
                 start = 'q';
                 end = 'r';
                 this.qList = null;
                 }
             else if(startLetter === 'R'){
-                console.log('R');
                 start = 'r';
                 end = 's';
                 this.rList = null;
                 }
             else if(startLetter === 'S'){
-                console.log('S');
                 start = 's';
                 end = 't';
                 this.sList = null;
                 }
             else if(startLetter === 'T'){
-                console.log('T');
                 start = 't';
                 end = 'u';
                 this.tList = null;
                 }
             else if(startLetter === 'U'){
-                console.log('U');
                 start = 'u';
                 end = 'v';
                 this.uList = null;
                 }
             else if(startLetter === 'V'){
-                console.log('V');
                 start = 'v';
                 end = 'w';
                 this.vList = null;
                 }
             else if(startLetter === 'W'){
-                console.log('W');
                 start = 'w';
                 end = 'zz';
                 this.wList = null;
@@ -2258,8 +2112,7 @@ export default class Rhcreports extends LightningElement {
                             )
                     .then(
                         result=>{
-                            var response = result;
-                            var repList = response;
+                            var repList = result;
                         if(startLetter === 'A'){
                             this.aList = repList;
                             }
@@ -2341,145 +2194,122 @@ export default class Rhcreports extends LightningElement {
                     );
             }
         
-        getAllNPSPDPMRows(component, startLetter){
+        getAllNPSPDPMRows(startLetter){
             var start;
             var end;
             var selectedReport = this.selectedReport;
             if(startLetter === 'A'){
-                console.log('A');
                 this.processingFinished = false;
                 start = 'a';
                 end = 'b';
                 this.aList = null;
                 }
             else if(startLetter === 'B'){
-                console.log('B');
                 start = 'b';
                 end = 'c';
                 this.bList = null;
                 }
             else if(startLetter === 'C'){
-                console.log('C');
                 start = 'c';
                 end = 'd';
                 this.cList = null;
                 }
             else if(startLetter === 'D'){
-                console.log('D');
                 start = 'd';
                 end = 'e';
                 this.dList = null;
                 }
             else if(startLetter === 'E'){
-                console.log('E');
                 start = 'e';
                 end = 'f';
                 this.eList = null;
                 }
             else if(startLetter === 'F'){
-                console.log('F');
                 start = 'f';
                 end = 'g';
                 this.fList = null;
                 }
             else if(startLetter === 'G'){
-                console.log('G');
                 start = 'g';
                 end = 'h';
                 this.gList = null;
                 }
             else if(startLetter === 'H'){
-                console.log('H');
                 start = 'h';
                 end = 'i';
                 this.hList = null;
                 }
             else if(startLetter === 'I'){
-                console.log('I');
                 start = 'i';
                 end = 'j';
                 this.iList = null;
                 }
             else if(startLetter === 'J'){
-                console.log('J');
                 start = 'j';
                 end = 'k';
                 this.jList = null;
                 }
             else if(startLetter === 'K'){
-                console.log('K');
                 start = 'k';
                 end = 'l';
                 this.kList = null;
                 }
             else if(startLetter === 'L'){
-                console.log('L');
                 start = 'l';
                 end = 'm';
                 this.lList = null;
                 }
             else if(startLetter === 'M'){
-                console.log('M');
                 start = 'm';
                 end = 'n';
                 this.mList = null;
                 }
             else if(startLetter === 'N'){
-                console.log('N');
                 start = 'n';
                 end = 'o';
                 this.nList = null;
                 }
             else if(startLetter === 'O'){
-                console.log('O');
                 start = 'o';
                 end = 'p';
                 this.oList = null;
                 }
             else if(startLetter === 'P'){
-                console.log('P');
                 start = 'p';
                 end = 'q';
                 this.pList = null;
                 }
             else if(startLetter === 'Q'){
-                console.log('Q');
                 start = 'q';
                 end = 'r';
                 this.qList = null;
                 }
             else if(startLetter === 'R'){
-                console.log('R');
                 start = 'r';
                 end = 's';
                 this.rList = null;
                 }
             else if(startLetter === 'S'){
-                console.log('S');
                 start = 's';
                 end = 't';
                 this.sList = null;
                 }
             else if(startLetter === 'T'){
-                console.log('T');
                 start = 't';
                 end = 'u';
                 this.tList = null;
                 }
             else if(startLetter === 'U'){
-                console.log('U');
                 start = 'u';
                 end = 'v';
                 this.uList = null;
                 }
             else if(startLetter === 'V'){
-                console.log('V');
                 start = 'v';
                 end = 'w';
                 this.vList = null;
                 }
             else if(startLetter === 'W'){
-                console.log('W');
                 start = 'w';
                 end = 'zz';
                 this.wList = null;
@@ -2488,9 +2318,9 @@ export default class Rhcreports extends LightningElement {
                 getPDPMTasks({
                     "letterStart" : start,
                     "letterEnd" : end,
-                    "ADO_Filter" : component.get("v.selectedADO", "v.value"),
-                    "RVP_Filter" : component.get("v.selectedRVP", "v.value"),
-                    "DVP_Filter" : component.get("v.selectedDVP", "v.value"),
+                    "ADO_Filter" : this.selectedADO,
+                    "RVP_Filter" : this.selectedRVP,
+                    "DVP_Filter" : this.selectedDVP,
                     "reportName" : selectedReport
                     })
                     .then(
@@ -2579,9 +2409,9 @@ export default class Rhcreports extends LightningElement {
                 getNPSTasks({
                             "letterStart" : start,
                             "letterEnd" : end,
-                            "ADO_Filter" : component.get("v.selectedADO", "v.value"),
-                            "RVP_Filter" : component.get("v.selectedRVP", "v.value"),
-                            "DVP_Filter" : component.get("v.selectedDVP", "v.value"),
+                            "ADO_Filter" : this.selectedADO,
+                            "RVP_Filter" : this.selectedRVP,
+                            "DVP_Filter" : this.selectedDVP,
                             "reportName" : selectedReport
                         })
                     .then(
@@ -2668,26 +2498,23 @@ export default class Rhcreports extends LightningElement {
                 }
             }
         
-        convertArrayOfObjectsToCSVNPS(objectRecords){
-            // declare variables
+        convertArrayOfObjectsToCSVNPS(){
+            var objectRecords = this.objectRecords;
             var csvStringResult, counter, keys, columnDivider, lineDivider;
-            console.log('objectRecords Processing PDPM: ' + objectRecords);
-            // check if "objectRecords" parameter is null, then return from function
             if (objectRecords == null || !objectRecords.length){
+                console.log('Activity Export Broken');
+                this.Spinner = false;
                 return null;
-                 }
-            // store ,[comma] in columnDivider variabel for sparate CSV values and 
-            // for start next line use '\n' [new line] in lineDivider varaible  
+                }
             columnDivider = ',';
             lineDivider =  '\n';
-     
-            // in the keys valirable store fields API Names as a key 
-            // this labels use in CSV file header  
             keys = ['Name','Title','Email', 'Account', 'Product Type', 'Start Date', 'Last Date of Service', 'SAP', 'SMART', 'Assigned', 'Subject', 'NPS Score', 'Date', 'Priority', 'Status', 'Full Comments', 'Last Modified Date', 'Company/Account', 'Contact'];
             
             csvStringResult = '';
             csvStringResult += keys.join(columnDivider);
             csvStringResult += lineDivider;
+            try{
+                if(objectRecords !== undefined){
              for(var i=0; i < objectRecords.length; i++){
                 counter = 0;
                 if(objectRecords[i].ados !== undefined){
@@ -2872,7 +2699,6 @@ export default class Rhcreports extends LightningElement {
                     console.log('RVP List start');
                     for(var sTempkey in keys){
                     var skey = keys[sTempkey] ;  
-                  // add , [comma] after every String value,. [except first]
                       if(counter > 0){ 
                           csvStringResult += columnDivider; 
                        }  
@@ -2961,7 +2787,6 @@ export default class Rhcreports extends LightningElement {
                     console.log('Task List start');
                     for(var sTempkey in keys){
                     var skey = keys[sTempkey] ;  
-                  // add , [comma] after every String value,. [except first]
                       if(counter > 0){ 
                           csvStringResult += columnDivider; 
                        }
@@ -3119,9 +2944,274 @@ export default class Rhcreports extends LightningElement {
                     csvStringResult += lineDivider;
                     }
                     }
-               }// outer main for loop close 
-               // return the CSV formate String 
+               }
+            }
+            else{
+                console.log('ObjectRecords undefined');
+                this.Spinner = false;
+                }
+            }
+            catch(err){
+                console.log('Error with export: ' + err.message);
+                this.Spinner = false;
+            }
             return csvStringResult;        
             }
-    
+
+        openItem(event){
+            event.preventDefault();
+            var id = event.target.value;
+            var url = '/' + id;
+            window.open(url);
+            }
+
+        next(){
+            let countList = [...this.tableData];
+            var end = this.end;
+            var start = this.start;
+            var pageSize = this.pageSize;
+            var paginationList = [];
+            var i;
+            var totalSize = this.totalSize;
+            var counter = 0;
+            for(i=end+1; i<end+pageSize+1; i++){
+                if(countList.length > end){
+                    paginationList.push(countList[i]);
+                    counter ++ ;
+                    }
+                }
+            start = start + counter;
+            end = end + counter;
+                
+            this.start = start;
+            this.end = end;
+            this.paginationList = paginationList;
+            
+            if(this.end >= totalSize){
+                this.nextButtonDisabled = true;
+                }
+            else{
+                this.nextButtonDisabled = false;
+                }
+            
+            if(this.start === 0){
+                this.prevButtonDisabled = true;
+                }
+            else{
+                this.prevButtonDisabled = false;
+                } 
+            }
+                
+        previous(){
+            let countList = [...this.tableData];
+            var end = this.end;
+            var start = this.start;
+            var pageSize = this.pageSize;
+            var paginationList = [];
+            var i;
+            var totalSize = this.totalSize;
+            var counter = 0;
+            for(i = start-pageSize; i < start ; i++){
+                if(i > -1){
+                    paginationList.push(countList[i]);
+                    counter ++;
+                    }
+                else{
+                    start++;
+                    }
+                }
+            start = start - counter;
+            end = end - counter;
+                
+            this.start = start;
+            this.end = end;
+            this.paginationList = paginationList;
+            
+            if(this.end >= totalSize){
+                this.nextButtonDisabled = true;
+                }
+            else{
+                this.nextButtonDisabled = false;
+                }
+            
+            if(this.start === 0){
+                this.prevButtonDisabled = true;
+                }
+            else{
+                this.prevButtonDisabled = false;
+                } 
+            }
+
+        sortContact(event){
+            console.log('Sort Event Caused by: ' + event.target.name);
+                var field = event.target.name;
+                var sortAsc = this.sortAscContact;
+                let records = [...this.tableData];
+                var paginationList = [];
+                var i;
+            
+                var key =(a) => a[field]; 
+                var reverse;
+                if(sortAsc === false){
+                    reverse = -1;
+                    sortAsc = true;
+                    }
+                else{
+                    reverse = 1;
+                    sortAsc = false;
+                    }
+                    this.sortAscContact = sortAsc;
+                    this.sortFieldContact = field;
+                    this.tableData = records;
+                records.sort((a,b) => {
+                    let valueA = key(a) ? key(a).toLowerCase() : '';
+                    let valueB = key(b) ? key(b).toLowerCase() : '';
+                    return reverse * ((valueA > valueB) - (valueB > valueA));
+                    });
+                this.sortAsc = sortAsc;
+                this.sortField = field;
+                this.objectLst = records;
+                
+                var pageSize = this.pageSize;
+                var paginationList = [];
+             
+                var paginationList = [];
+                this.start = 0;
+                this.end = pageSize-1;
+                var loopSize;
+                if(records.length > pageSize){
+                    loopSize = pageSize;
+                    }
+                else{
+                    loopSize = result.length;
+                    }
+                for(var i=0; i< loopSize; i++){
+                    paginationList.push(records[i]);    
+                    }
+                this.paginationList = paginationList;
+                this.tableData = records;
+            }
+        
+        sortDVP(event){
+            var field = event.target.name;
+            var pageSize = this.pageSize;
+            var sortAsc = this.sortAscDVP;
+            let records = [...this.dvpListAct];
+            var reverse;
+                if(sortAsc === false){
+                    reverse = -1;
+                    sortAsc = true;
+                    }
+                else{
+                    reverse = 1;
+                    sortAsc = false;
+                    }
+                records.sort((a,b) => {
+                    let valueA = key(a) ? key(a).toLowerCase() : '';
+                    let valueB = key(b) ? key(b).toLowerCase() : '';
+                    return reverse * ((valueA > valueB) - (valueB > valueA));
+                    });
+            this.sortAscDVP = sortAsc;
+            this.sortFieldDVP = field;
+            this.dvpListAct = records;
+            var pageSize = this.pageSize2;
+            var paginationList = [];
+             
+            var paginationList = [];
+                    this.start = 0;
+                    this.end = pageSize-1;
+                    var loopSize;
+                if(records.length > pageSize){
+                    loopSize = pageSize;
+                    }
+                else{
+                    loopSize = result.length;
+                    }
+                    for(var i=0; i< loopSize; i++){
+                         paginationList.push(records[i]);    
+                        }
+                    this.paginationListDVPAct = paginationList;
+                    this.dvpListAct = records;
+            }
+
+        sortRVP(event){
+            var field = event.target.name;
+            pageSize = this.pageSize2;	
+            var sortAsc = this.sortAscRVP;
+            
+            let records = [...this.rvpListAct];
+            var reverse;
+            if(sortAsc === false){
+                reverse = -1;
+                sortAsc = true;
+                }
+            else{
+                reverse = 1;
+                sortAsc = false;
+                }
+            records.sort((a,b) => {
+                let valueA = key(a) ? key(a).toLowerCase() : '';
+                let valueB = key(b) ? key(b).toLowerCase() : '';
+                return reverse * ((valueA > valueB) - (valueB > valueA));
+                });
+            this.sortAscRVP = sortAsc;
+            this.sortFieldRVP = field;
+            this.rvpListAct = records;
+            var pageSize = this.pageSize2;
+            var paginationList = [];
+             
+            var paginationList = [];
+                    this.start = 0;
+                    this.end = pageSize-1;
+                    var loopSize;
+                if(records.length > pageSize){
+                    loopSize = pageSize;
+                    }
+                else{
+                    loopSize = result.length;
+                    }
+                    for(var i=0; i< loopSize; i++){
+                         paginationList.push(records[i]);    
+                        }
+                    this.paginationListRVPAct = paginationList;
+                    this.rvpListAct = records;
+            }
+
+        sortADO(event){
+            var field = event.target.name;
+            pageSize = this.pageSize2;	
+            var sortAsc = this.sortAscADO;
+            let records = [...this.adoListAct];
+            var reverse;
+            if(sortAsc === false){
+                reverse = -1;
+                sortAsc = true;
+                }
+            else{
+                reverse = 1;
+                sortAsc = false;
+                }
+            records.sort((a,b) => {
+                let valueA = key(a) ? key(a).toLowerCase() : '';
+                let valueB = key(b) ? key(b).toLowerCase() : '';
+                return reverse * ((valueA > valueB) - (valueB > valueA));
+                });
+            this.sortAscADO = sortAsc;
+            this.sortFieldADO = field;
+            this.adoListAct = records;
+            var end = this.end;
+            var start = this.start;
+            var pageSize = this.pageSize2;
+            var paginationList = [];
+             
+            var paginationList = [];
+                    this.start = 0;
+                    this.end = pageSize-1;
+                    for(var i=0; i< pageSize; i++){
+                         paginationList.push(records[i]);    
+                        }
+                    this.paginationListADOAct = paginationList;
+                    this.adoListAct = records;
+            }
+
 }

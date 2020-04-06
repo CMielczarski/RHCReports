@@ -15,7 +15,7 @@
             <div>
                 <select class="slds-select" onchange={onReportChange} id="InputSelectReport">
                     <template for:each={selReports} for:item="reportVal"> 
-                        <option value={reportVal} title={reportVal} key={reportVal}></option> 
+                        <option value={reportVal} key={reportVal}>{reportVal}</option> 
                     </template>
                 </select>
                 <br/>
@@ -29,7 +29,7 @@
             <div>
                 <select class="slds-select" name="InputSelectAccount" disabled={accSelectDisabled} onchange={getFormInputChange}>
                     <template for:each={selAccounts} for:item="accountName"> 
-                        <option value={accountName} title={accountName} key={accountName}></option> 
+                        <option value={accountName} key={accountName}>{accountName}</option> 
                     </template>
                 </select>
             </div>
@@ -38,11 +38,9 @@
     
     <template if:true={showExtraFilters}>
         <br/>
-    
-    <table>
-        <tr>
-        <td>
-        
+        <table>
+            <tr>
+            <td>
                 <lightning-dual-listbox name="languages"  
                            label= "Select ADOs (Optional)" 
                            source-label="Available" 
@@ -50,9 +48,8 @@
                            options={adoListChoose} 
                            onchange={handleADOChange}>
                         </lightning-dual-listbox>
-                
-        </td>
-    <td>
+            </td>
+            <td>
                 <lightning-dual-listbox name="languages"  
                            label= "Select RVPs (Optional)" 
                            source-label="Available" 
@@ -61,9 +58,8 @@
                            onchange={handleRVPChange}>
                            </lightning-dual-listbox>
                            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-                        </td>
-            
-    <td>
+            </td>
+            <td>
                 <lightning-dual-listbox name="languages"  
                            label= "Select DVPs (Optional)" 
                            source-label="Available" 
@@ -71,21 +67,17 @@
                            options={dvpListChoose} 
                            onchange={handleDVPChange}>
                         </lightning-dual-listbox>
-        </td>        
+            </td>
             </tr>
         </table>
-    
     </template>
-    
     <br/>
     <div class="slds-col paddingleft paddingTop">
         <div class="slds-form-element">
-            
             <lightning-button id="reportButton" label="Go" onclick={runReports}></lightning-button>
         </div>
     </div>
-    <br/>
-    
+        <br/>
     <div>
         <template if:true={showFacility}>
             <table class="slds-table slds-table--bordered slds-table--cell-buffer">
@@ -118,6 +110,7 @@
                                 </th>
                             </tr>
                         </thead>
+                        <template if:true={showPaginationListDVP}>
                         <tbody>
                             <tr>
                                 <template for:each={paginationListDVP} for:item="con">  
@@ -127,6 +120,7 @@
                                 </template>
                             </tr>
                         </tbody>
+                    </template>
                     </table>
                 </th>
                 <th>
@@ -138,6 +132,7 @@
                                 </th>
                             </tr>
                         </thead>
+                        <template if:true={showPaginationListRVP}>
                         <tbody>
                             <tr>
                                 <template for:each={paginationListRVP} for:item="con">  
@@ -147,6 +142,7 @@
                                 </template>
                             </tr>
                         </tbody>
+                    </template>
                     </table>
                 </th>
                 <th>
@@ -158,6 +154,7 @@
                                 </th>
                             </tr>
                         </thead>
+                        <template if:true={showPaginationListADO}>
                         <tbody>
                             <tr>
                                 <template for:each={paginationListADO} for:item="con">  
@@ -167,60 +164,41 @@
                                 </template>
                             </tr>
                         </tbody>
+                        </template>
                     </table>
                 </th>
             </table>
+            <template if:true={showPaginationList}>
             <table class="slds-table slds-table--bordered slds-table--cell-buffer">
                 <thead>
                     <tr class="slds-text-title--caps">
                         
-                        <th class="slds-is-sortable slds-text-title--caps" scope="col" onclick={sortName}>
-                            <a href="javascript:void(0);" class="slds-th__action slds-text-link--reset">
-                                <span class="slds-assistive-text">Sort</span>
-                                <span class="slds-truncate" title="accountName">Name</span>  
-                            </a>
+                        <th class="slds-is-sortable slds-text-title--caps" scope="col">
+                            <lightning-button label="Name" name="Name" onclick={sortContact}></lightning-button>
                         </th>
                         
-                        <th class="slds-is-sortable slds-text-title--caps" scope="col" onclick={sortTitle}>
-                            <a href="javascript:void(0);" class="slds-th__action slds-text-link--reset">
-                                <span class="slds-assistive-text">Sort</span>
-                                <span class="slds-truncate" title="ownerName">Title</span>
-                            </a>
+                        <th class="slds-is-sortable slds-text-title--caps" scope="col">
+                            <lightning-button label="Title" name="Title" onclick={sortContact}></lightning-button>
                         </th>
                         
-                        <th class="slds-is-sortable slds-text-title--caps" scope="col" onclick={sortAddress}>
-                            <a href="javascript:void(0);" class="slds-th__action slds-text-link--reset">
-                                <span class="slds-assistive-text">Sort</span>
-                                <span class="slds-truncate" title="activity">Address</span>
-                            </a>
+                        <th class="slds-is-sortable slds-text-title--caps" scope="col">
+                            <lightning-button label="Address" name="Address" onclick={sortContact}></lightning-button>
                         </th>
                         
-                        <th class="slds-is-sortable slds-text-title--caps" scope="col" onclick={sortCity}>
-                            <a href="javascript:void(0);" class="slds-th__action slds-text-link--reset">
-                                <span class="slds-assistive-text">Sort</span>
-                                <span class="slds-truncate" title="activity">City</span>
-                            </a>
+                        <th class="slds-is-sortable slds-text-title--caps" scope="col">
+                            <lightning-button label="City" name="City" onclick={sortContact}></lightning-button>
                         </th>
                         
-                        <th class="slds-is-sortable slds-text-title--caps" scope="col" onclick={sortState}>
-                            <a href="javascript:void(0);" class="slds-th__action slds-text-link--reset">
-                                <span class="slds-assistive-text">Sort</span>
-                                <span class="slds-truncate" title="activity">State</span>
-                            </a>
+                        <th class="slds-is-sortable slds-text-title--caps" scope="col">
+                            <lightning-button label="State" name="State" onclick={sortContact}></lightning-button>
                         </th>
                         
-                        <th class="slds-is-sortable slds-text-title--caps" scope="col" onclick={sortZip}>
-                            <a href="javascript:void(0);" class="slds-th__action slds-text-link--reset">
-                                <span class="slds-assistive-text">Sort</span>
-                                <span class="slds-truncate" title="activity">Zip</span>
-                            </a>
+                        <th class="slds-is-sortable slds-text-title--caps" scope="col">
+                            <lightning-button label="Zip" name="Zip" onclick={sortContact}></lightning-button>
                         </th>
                         
-                        <th class="slds-is-sortable slds-text-title--caps" scope="col" onclick={sortPhone}>
-                            <a href="javascript:void(0);" class="slds-th__action slds-text-link--reset">
-                                <span class="slds-assistive-text">Sort</span>
-                                <span class="slds-truncate" title="Department">Phone</span>
-                            </a>
+                        <th class="slds-is-sortable slds-text-title--caps" scope="col">
+                            <lightning-button label="Phone" name="Phone" onclick={sortContact}></lightning-button>
                         </th>
                     </tr>
                 </thead>
@@ -257,10 +235,12 @@
                                 </th>  
                         </tr>
                     </template>
+                    
                 </tbody>
             </table>
             <lightning-button label="Previous" onclick={previous}></lightning-button>
-			<lightning-button label="Next" onclick={next}></lightning-button><br/>
+            <lightning-button label="Next" onclick={next}></lightning-button><br/>
+        </template>
         </template>
         
         <template if:true={report2}>
@@ -270,28 +250,19 @@
                     <table class="slds-table slds-table--bordered slds-table--cell-buffer">
                         <thead>
                             <tr class="slds-text-title--caps">
-                                <th class="slds-is-sortable slds-text-title--caps" scope="col" onclick={sortDVPName}>
-                                    <a href="javascript:void(0);" class="slds-th__action slds-text-link--reset">
-                                        <div class="slds-truncate" title="First Name">Activity Owner</div>
-                                    </a>
+                                <th class="slds-is-sortable slds-text-title--caps" scope="col">
+                                    <lightning-button label="Activity Owner" onclick={sortDVP} name="Owner"></lightning-button>
                                 </th>
                                 
-                                <th class="slds-is-sortable slds-text-title--caps" scope="col" onclick={sortDVPType}>
-                                    <a href="javascript:void(0);" class="slds-th__action slds-text-link--reset">
-                                        
-                                        <div class="slds-truncate" title="First Name">Activity Type</div>
-                                    </a>
+                                <th class="slds-is-sortable slds-text-title--caps" scope="col">
+                                        <lightning-button label="Activity Type" onclick={sortDVP} name="Type"></lightning-button>
                                 </th>
                                 
-                                <th class="slds-is-sortable slds-text-title--caps" scope="col" onclick={sortDVPDate}>
-                                    <a href="javascript:void(0);" class="slds-th__action slds-text-link--reset">
-                                        <div class="slds-truncate" title="First Name">Date</div>
-                                    </a>
+                                <th class="slds-is-sortable slds-text-title--caps" scope="col">
+                                    <lightning-button label="Date" onclick={sortDVP} name="Date"></lightning-button>
                                 </th>
-                                <th class="slds-is-sortable slds-text-title--caps" scope="col" onclick={sortDVPDescription}>
-                                    <a href="javascript:void(0);" class="slds-th__action slds-text-link--reset">
-                                        <div class="slds-truncate" title="Department">Description</div>
-                                    </a>
+                                <th class="slds-is-sortable slds-text-title--caps" scope="col">
+                                    <lightning-button label="Description" onclick={sortDVP} name="Description"></lightning-button>
                                 </th>
                             </tr>
                         </thead>
@@ -300,7 +271,7 @@
                                     <tr key={dvp.Id}>
                                         <th >
                                             
-                                            <div class="slds-truncate" title={dvp.name}><lightning-formatted-url value={dvp.Owner.Id} onclick={openItem} label={dvp.Owner.Name} target="_blank"></lightning-formatted-url></div>
+                                            <div class="slds-truncate" title={dvp.Name}><lightning-formatted-url value={dvp.Owner.Id} onclick={openItem} label={dvp.Owner.Name} target="_blank"></lightning-formatted-url></div>
                                             
                                         </th>
                                         
@@ -332,29 +303,19 @@
                     <table class="slds-table slds-table--bordered slds-table--cell-buffer">
                         <thead>
                             <tr class="slds-text-title--caps">
-                                
-                                <th class="slds-is-sortable slds-text-title--caps" scope="col" onclick={sortRVPName}>
-                                    <a href="javascript:void(0);" class="slds-th__action slds-text-link--reset">
-                                        <div class="slds-truncate" title="First Name">Activity Owner</div>
-                                    </a>
-                                </th>
-                                <th class="slds-is-sortable slds-text-title--caps" scope="col" onclick={sortRVPType}>
-                                    <a href="javascript:void(0);" class="slds-th__action slds-text-link--reset">
-                                        
-                                        <div class="slds-truncate" title="First Name">Activity Type</div>
-                                    </a>
+                                <th class="slds-is-sortable slds-text-title--caps" scope="col">
+                                    <lightning-button label="Activity Owner" onclick={sortRVP} name="Owner"></lightning-button>
                                 </th>
                                 
-                                <th class="slds-is-sortable slds-text-title--caps" scope="col" onclick={sortRVPDate}>
-                                    <a href="javascript:void(0);" class="slds-th__action slds-text-link--reset">
-                                        <div class="slds-truncate" title="First Name">Date</div>
-                                    </a>
+                                <th class="slds-is-sortable slds-text-title--caps" scope="col">
+                                        <lightning-button label="Activity Type" onclick={sortRVP} name="Type"></lightning-button>
                                 </th>
                                 
-                                <th class="slds-is-sortable slds-text-title--caps" scope="col" onclick={sortRVPDescription}>
-                                    <a href="javascript:void(0);" class="slds-th__action slds-text-link--reset">
-                                        <div class="slds-truncate" title="Department">Description</div>
-                                    </a>
+                                <th class="slds-is-sortable slds-text-title--caps" scope="col">
+                                    <lightning-button label="Date" onclick={sortRVP} name="Date"></lightning-button>
+                                </th>
+                                <th class="slds-is-sortable slds-text-title--caps" scope="col">
+                                    <lightning-button label="Description" onclick={sortRVP} name="Description"></lightning-button>
                                 </th>
                             </tr>
                         </thead>
@@ -389,28 +350,19 @@
                     <table class="slds-table slds-table--bordered slds-table--cell-buffer">
                         <thead>
                             <tr class="slds-text-title--caps">
-                                <th class="slds-is-sortable slds-text-title--caps" scope="col" onclick={sortADOName}>
-                                    <a href="javascript:void(0);" class="slds-th__action slds-text-link--reset">
-                                        <div class="slds-truncate" title="First Name">Activity Owner</div>
-                                    </a>
+                                <th class="slds-is-sortable slds-text-title--caps" scope="col">
+                                    <lightning-button label="Activity Owner" onclick={sortADO} name="Owner"></lightning-button>
                                 </th>
                                 
-                                <th class="slds-is-sortable slds-text-title--caps" scope="col" onclick={sortADOType}>
-                                    <a href="javascript:void(0);" class="slds-th__action slds-text-link--reset">
-                                        <div class="slds-truncate" title="First Name">Activity Type</div>
-                                    </a>
+                                <th class="slds-is-sortable slds-text-title--caps" scope="col">
+                                        <lightning-button label="Activity Type" onclick={sortADO} name="Type"></lightning-button>
                                 </th>
                                 
-                                <th class="slds-is-sortable slds-text-title--caps" scope="col" onclick={sortADODate}>
-                                    <a href="javascript:void(0);" class="slds-th__action slds-text-link--reset">
-                                        <div class="slds-truncate" title="First Name">Date</div>
-                                    </a>
+                                <th class="slds-is-sortable slds-text-title--caps" scope="col">
+                                    <lightning-button label="Date" onclick={sortADO} name="Date"></lightning-button>
                                 </th>
-                                
-                                <th class="slds-is-sortable slds-text-title--caps" scope="col" onclick={sortADODescription}>
-                                    <a href="javascript:void(0);" class="slds-th__action slds-text-link--reset">
-                                        <div class="slds-truncate" title="Department">Description</div>
-                                    </a>
+                                <th class="slds-is-sortable slds-text-title--caps" scope="col">
+                                    <lightning-button label="Description" onclick={sortADO} name="Description"></lightning-button>
                                 </th>
                             </tr>
                         </thead>
@@ -438,7 +390,7 @@
         </template>
         
         <template if:true={showAlpha}>
-            <lightning:Tabset>
+            <lightning-tabset>
                 <lightning-tab label="A" aura:id="detailTabA" onactive={onTabChangeA}></lightning-tab>
                 <lightning-tab label="B" aura:id="detailTabB" onactive={onTabChangeB}></lightning-tab>
                 <lightning-tab label="C" aura:id="detailTabC" onactive={onTabChangeC}></lightning-tab>
@@ -465,40 +417,43 @@
                 <lightning-tab label="X" aura:id="detailTabX" onactive={onTabChangeX}></lightning-tab>
                 <lightning-tab label="Y" aura:id="detailTabY" onactive={onTabChangeY}></lightning-tab>
                 <lightning-tab label="Z" aura:id="detailTabZ" onactive={onTabChangeZ}></lightning-tab>
-                </lightning:Tabset>
+                </lightning-tabset>
+            </template>
             <lightning-button id="exportButton" label="Export" onclick={downloadCsvAllAccount} ></lightning-button>
             <br/>
             <br/>
+            <template if:true={report3}>
             <template for:each={accountTeamAndADO} for:item="con">
-                <template if:true={showCon}>
-            <table class="slds-table slds-table--bordered slds-table--cell-buffer" key={con.Id}>
-                	<thead >
-                    	<tr class="slds-text-title--caps">
-                        	<th scope="row">
-                            	<div class="slds-truncate" title={con.a.Name}>Account: <lightning-formatted-url value={con.a.Id} label={con.a.Name} onclick={openItem} target="_blank"></lightning-formatted-url></div>
-                        	</th>
+                <template if:true={con.showAcc}>
+                    <table class="slds-table slds-table--bordered slds-table--cell-buffer" key={con.Id}>
+                    <thead >
+                        <tr class="slds-text-title--caps">
                             <th scope="row">
-                            	<div class="slds-truncate" title={con.a.PF_Product_Type__c}>Product Type: <lightning-formatted-text value={con.a.PF_Product_Type__c}></lightning-formatted-text></div>
+                                <br/>
+                                <div class="slds-truncate" title={con.a.Name}>Account: <lightning-formatted-url value={con.a.Id} label={con.a.Name} onclick={openItem} target="_blank"></lightning-formatted-url></div>
                             </th>
                             <th scope="row">
-                            	<div class="slds-truncate" title={con.a.PF_Start_Date__c}>Start Date: <lightning-formatted-date-time value={con.a.PF_Start_Date__c} format="MM/dd/yyyy"></lightning-formatted-date-time></div>
+                                <div class="slds-truncate" title={con.a.PF_Product_Type__c}>Product Type: <lightning-formatted-text value={con.a.PF_Product_Type__c}></lightning-formatted-text></div>
                             </th>
                             <th scope="row">
-                            	<div class="slds-truncate" title={con.a.Last_Date_of_Service__c}>Last Date of Service: <lightning-formatted-date-time value={con.a.PF_Start_Date__c} format="MM/dd/yyyy"></lightning-formatted-date-time></div>
+                                <div class="slds-truncate" title={con.a.PF_Start_Date__c}>Start Date: <lightning-formatted-date-time value={con.a.PF_Start_Date__c} format="MM/dd/yyyy"></lightning-formatted-date-time></div>
                             </th>
                             <th scope="row">
-                            	<div class="slds-truncate" title={con.a.PF_SAP_ID__c}>SAP: <lightning-formatted-text value={con.a.PF_SAP_ID__c}></lightning-formatted-text></div>
+                                <div class="slds-truncate" title={con.a.Last_Date_of_Service__c}>Last Date of Service: <lightning-formatted-date-time value={con.a.PF_Start_Date__c} format="MM/dd/yyyy"></lightning-formatted-date-time></div>
                             </th>
                             <th scope="row">
-                            	<div class="slds-truncate" title={con.a.PF_Smart_ID__c}>SMART: <lightning-formatted-text value={con.a.PF_Smart_ID__c}></lightning-formatted-text></div>
+                                <div class="slds-truncate" title={con.a.PF_SAP_ID__c}>SAP: <lightning-formatted-text value={con.a.PF_SAP_ID__c}></lightning-formatted-text></div>
                             </th>
-                    	</tr>
-                	</thead>
-            	</table>
+                            <th scope="row">
+                                <div class="slds-truncate" title={con.a.PF_Smart_ID__c}>SMART: <lightning-formatted-text value={con.a.PF_Smart_ID__c}></lightning-formatted-text></div>
+                            </th>
+                        </tr>
+                    </thead>
+                </table>
                     </template>
-            	<template if:true={showConADO}>
+                <template if:true={con.showADOs}>
                 ADOs
-            	<table class="slds-table slds-table--bordered slds-table--cell-buffer" key={con.Id}>
+                <table class="slds-table slds-table--bordered slds-table--cell-buffer" key={con.Id}>
                     <thead>
                         <tr class="slds-text-title--caps">
                             <th scope="row">
@@ -531,7 +486,7 @@
                     </tbody>
                 </table>
             	</template>
-                <template if:true={showConDVP}>
+                <template if:true={con.showDVPs}>
                 DVPs
             	<table class="slds-table slds-table--bordered slds-table--cell-buffer" key={con.Id}>
                     <thead>
@@ -565,10 +520,10 @@
                         </template>
                     </tbody>
                 </table>
-            	</template>
-                <template if:true={showConRVP}>
+                </template>
+                <template if:true={con.showRVPs}>
                 RVPs
-            	<table class="slds-table slds-table--bordered slds-table--cell-buffer" key={con.Id}>
+                <table class="slds-table slds-table--bordered slds-table--cell-buffer" key={con.Id}>
                     <thead>
                         <tr class="slds-text-title--caps">
                             <th scope="row">
@@ -600,8 +555,8 @@
                         </template>
                     </tbody>
                 </table>
-            	</template>
-                <template if:true={showConCTeam}>
+                </template>
+                <template if:true={con.showCTeams}>
                 Contact Team
                 <table class="slds-table slds-table--bordered slds-table--cell-buffer" key={con.Id}>
                     <thead>
@@ -636,7 +591,7 @@
                     </tbody>
                 </table>
                 </template>
-                <template if:true={showCon}>
+                <template if:true={con.showCons}>
                 Contacts
                 <table class="slds-table slds-table--bordered slds-table--cell-buffer" key={con.Id}>
                     <thead>
@@ -676,10 +631,9 @@
         <br/>
         <br/>
         <template if:true={report4}>
-            <br/>
-            <br/>
+            <template if:true={showNPSActivityList}>
             <template for:each={NPSActivityList} for:item="con">
-                <template if:true={showAcc}>
+                <template if:true={con.showAcc}>
             <table class="slds-table slds-table--bordered slds-table--cell-buffer" key={con.Id}>
                 	<thead>
                     	<tr class="slds-text-title--caps">
@@ -705,7 +659,7 @@
                 	</thead>
             	</table>
                     </template>
-            	<template if:true={showConADO}>
+            	<template if:true={con.showADOs}>
                 ADOs
             	<table class="slds-table slds-table--bordered slds-table--cell-buffer" key={con.Id}>
                     <thead>
@@ -740,7 +694,7 @@
                     </tbody>
                 </table>
             	</template>
-                <template if:true={showConDVP}>
+                <template if:true={con.showDVPs}>
                 DVPs
             	<table class="slds-table slds-table--bordered slds-table--cell-buffer" key={con.Id}>
                     <thead>
@@ -775,7 +729,7 @@
                     </tbody>
                 </table>
             	</template>
-                <template if:true={showConRVP}>
+                <template if:true={con.showRVPs}>
                 RVPs
             	<table class="slds-table slds-table--bordered slds-table--cell-buffer" key={con.Id}>
                     <thead>
@@ -810,7 +764,7 @@
                     </tbody>
                 </table>
             	</template>
-                <template if:true={showConTasks}>
+                <template if:true={con.showTasks}>
                 Activities
                 <table class="slds-table slds-table--bordered slds-table--cell-buffer" key={con.Id}>
                     <thead>
@@ -893,7 +847,7 @@
                                     </th>
                                     
                                     <th scope="row">
-                                        <div class="slds-truncate" title={add.What.Name}><lightning-formatted-url value={add.WhatId} label={add.What.Name} onclick={openItem} target="_blank"></lightning-formatted-url></div>
+                                        <div class="slds-truncate" title={add.What.Name}><lightning-formatted-url value={add.Account__r.Id} label={add.Account__r.Name} onclick={openItem} target="_blank"></lightning-formatted-url></div>
                                     </th>
                                     
                                     <th scope="row">
@@ -911,6 +865,7 @@
             </template>
             <br/>
             <br/>
+        </template>
         </template>
     </div>
 </template>
