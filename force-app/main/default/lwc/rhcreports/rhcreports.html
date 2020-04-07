@@ -182,19 +182,19 @@
                         </th>
                         
                         <th class="slds-is-sortable slds-text-title--caps" scope="col">
-                            <lightning-button label="Address" name="Address" onclick={sortContact}></lightning-button>
+                            <lightning-button label="Address" name="MailingStreet" onclick={sortContact}></lightning-button>
                         </th>
                         
                         <th class="slds-is-sortable slds-text-title--caps" scope="col">
-                            <lightning-button label="City" name="City" onclick={sortContact}></lightning-button>
+                            <lightning-button label="City" name="MailingCity" onclick={sortContact}></lightning-button>
                         </th>
                         
                         <th class="slds-is-sortable slds-text-title--caps" scope="col">
-                            <lightning-button label="State" name="State" onclick={sortContact}></lightning-button>
+                            <lightning-button label="State" name="MailingState" onclick={sortContact}></lightning-button>
                         </th>
                         
                         <th class="slds-is-sortable slds-text-title--caps" scope="col">
-                            <lightning-button label="Zip" name="Zip" onclick={sortContact}></lightning-button>
+                            <lightning-button label="Zip" name="MailingPostalCode" onclick={sortContact}></lightning-button>
                         </th>
                         
                         <th class="slds-is-sortable slds-text-title--caps" scope="col">
@@ -251,7 +251,7 @@
                         <thead>
                             <tr class="slds-text-title--caps">
                                 <th class="slds-is-sortable slds-text-title--caps" scope="col">
-                                    <lightning-button label="Activity Owner" onclick={sortDVP} name="Owner"></lightning-button>
+                                    <lightning-button label="Activity Owner" onclick={sortDVP} name="Owner.Name"></lightning-button>
                                 </th>
                                 
                                 <th class="slds-is-sortable slds-text-title--caps" scope="col">
@@ -259,7 +259,7 @@
                                 </th>
                                 
                                 <th class="slds-is-sortable slds-text-title--caps" scope="col">
-                                    <lightning-button label="Date" onclick={sortDVP} name="Date"></lightning-button>
+                                    <lightning-button label="Date" onclick={sortDVP} name="StartDateTime"></lightning-button>
                                 </th>
                                 <th class="slds-is-sortable slds-text-title--caps" scope="col">
                                     <lightning-button label="Description" onclick={sortDVP} name="Description"></lightning-button>
@@ -304,7 +304,7 @@
                         <thead>
                             <tr class="slds-text-title--caps">
                                 <th class="slds-is-sortable slds-text-title--caps" scope="col">
-                                    <lightning-button label="Activity Owner" onclick={sortRVP} name="Owner"></lightning-button>
+                                    <lightning-button label="Activity Owner" onclick={sortRVP} name="Owner.Name"></lightning-button>
                                 </th>
                                 
                                 <th class="slds-is-sortable slds-text-title--caps" scope="col">
@@ -312,7 +312,7 @@
                                 </th>
                                 
                                 <th class="slds-is-sortable slds-text-title--caps" scope="col">
-                                    <lightning-button label="Date" onclick={sortRVP} name="Date"></lightning-button>
+                                    <lightning-button label="Date" onclick={sortRVP} name="StartDateTime"></lightning-button>
                                 </th>
                                 <th class="slds-is-sortable slds-text-title--caps" scope="col">
                                     <lightning-button label="Description" onclick={sortRVP} name="Description"></lightning-button>
@@ -351,7 +351,7 @@
                         <thead>
                             <tr class="slds-text-title--caps">
                                 <th class="slds-is-sortable slds-text-title--caps" scope="col">
-                                    <lightning-button label="Activity Owner" onclick={sortADO} name="Owner"></lightning-button>
+                                    <lightning-button label="Activity Owner" onclick={sortADO} name="Owner.Name"></lightning-button>
                                 </th>
                                 
                                 <th class="slds-is-sortable slds-text-title--caps" scope="col">
@@ -359,7 +359,7 @@
                                 </th>
                                 
                                 <th class="slds-is-sortable slds-text-title--caps" scope="col">
-                                    <lightning-button label="Date" onclick={sortADO} name="Date"></lightning-button>
+                                    <lightning-button label="Date" onclick={sortADO} name="StartDateTime"></lightning-button>
                                 </th>
                                 <th class="slds-is-sortable slds-text-title--caps" scope="col">
                                     <lightning-button label="Description" onclick={sortADO} name="Description"></lightning-button>
@@ -418,8 +418,8 @@
                 <lightning-tab label="Y" aura:id="detailTabY" onactive={onTabChangeY}></lightning-tab>
                 <lightning-tab label="Z" aura:id="detailTabZ" onactive={onTabChangeZ}></lightning-tab>
                 </lightning-tabset>
+                <lightning-button id="exportButton" label="Export" onclick={downloadCsvAllAccount} ></lightning-button>
             </template>
-            <lightning-button id="exportButton" label="Export" onclick={downloadCsvAllAccount} ></lightning-button>
             <br/>
             <br/>
             <template if:true={report3}>

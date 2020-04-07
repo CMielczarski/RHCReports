@@ -3070,7 +3070,6 @@ export default class Rhcreports extends LightningElement {
                     });
                 this.sortAsc = sortAsc;
                 this.sortField = field;
-                this.objectLst = records;
                 
                 var pageSize = this.pageSize;
                 var paginationList = [];
@@ -3083,7 +3082,7 @@ export default class Rhcreports extends LightningElement {
                     loopSize = pageSize;
                     }
                 else{
-                    loopSize = result.length;
+                    loopSize = records.length;
                     }
                 for(var i=0; i< loopSize; i++){
                     paginationList.push(records[i]);    
@@ -3125,7 +3124,7 @@ export default class Rhcreports extends LightningElement {
                     loopSize = pageSize;
                     }
                 else{
-                    loopSize = result.length;
+                    loopSize = records.length;
                     }
                     for(var i=0; i< loopSize; i++){
                          paginationList.push(records[i]);    
@@ -3168,7 +3167,7 @@ export default class Rhcreports extends LightningElement {
                     loopSize = pageSize;
                     }
                 else{
-                    loopSize = result.length;
+                    loopSize = records.length;
                     }
                     for(var i=0; i< loopSize; i++){
                          paginationList.push(records[i]);    
@@ -3199,14 +3198,19 @@ export default class Rhcreports extends LightningElement {
             this.sortAscADO = sortAsc;
             this.sortFieldADO = field;
             this.adoListAct = records;
-            var end = this.end;
-            var start = this.start;
             var pageSize = this.pageSize2;
             var paginationList = [];
              
             var paginationList = [];
                     this.start = 0;
                     this.end = pageSize-1;
+                    var loopSize;
+                if(records.length > pageSize){
+                    loopSize = pageSize;
+                    }
+                else{
+                    loopSize = records.length;
+                    }
                     for(var i=0; i< pageSize; i++){
                          paginationList.push(records[i]);    
                         }
